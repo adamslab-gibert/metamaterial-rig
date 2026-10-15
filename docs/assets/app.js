@@ -9,6 +9,14 @@
   const RAW = `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${CFG.branch || "main"}`;
   const NS = "http://www.w3.org/2000/svg";
   const N_ROWS = 19, N_CELLS = 105;
+  const $id = id => document.getElementById(id);
+  const PAGE = { editor: !!$id("editor"), batch: !!$id("zip-input"), status: !!$id("status"), queue: !!$id("queue-body"),
+    results: !!$id("results"), dataset: !!$id("ds-total") };
+  // keep ?demo=1 when moving between pages
+  if (DEMO) document.querySelectorAll('a[href$=".html"], a[href*=".html#"]').forEach(a => {
+    const [path, hash] = a.getAttribute("href").split("#"); a.setAttribute("href", path + "?demo=1" + (hash ? "#" + hash : ""));
+  });
+  const pageUrl = (file, params) => { const q = new URLSearchParams(params || {}); if (DEMO) q.set("demo", "1"); const t = q.toString(); return file + (t ? "?" + t : ""); };
 
   // ---------------------------------------------------------------- lattice geometry
   // Rows are numbered from the top (row 0) to the bottom (row 18). Even rows hold 6 cells
@@ -142,7 +150,8 @@
     try { saved = localStorage.getItem("rig-pattern"); } catch (e) { /* ignore */ }
     // first visit: start from a pattern that was measured on the rig
     const EXAMPLE = "011010010101001011010111010011000111011110110100110010010110001101101011001010100110010110001101011101011";
-    bits = [...(saved && /^[01]{105}$/.test(saved) ? saved : EXAMPLE)].map(Number);
+    const fromUrl = new URLSearchParams(location.search).get("pattern");      // e.g. from the explorer
+    bits = [...(fromUrl && /^[01]{105}$/.test(fromUrl) ? fromUrl : saved && /^[01]{105}$/.test(saved) ? saved : EXAMPLE)].map(Number);
     render();
   }
 
@@ -181,11 +190,14 @@
   }
 
   // ---------------------------------------------------------------- status + queue
-  const statusBox = document.getElementById("status");
+  const statusBox = $id("status");
   function setStatus(state, title, detail) {
+    const pill = $id("rig-pill");
+    if (pill) { pill.dataset.state = state; $id("rig-pill-text").textContent = "Rig: " + title.replace(/^Online, not taking new tests$/, "Paused").replace(/^Online and ready$/, "Online"); pill.title = detail || ""; }
+    if (!statusBox) return;
     statusBox.dataset.state = state;
-    document.getElementById("status-title").textContent = title;
-    document.getElementById("status-detail").textContent = detail || "";
+    $id("status-title").textContent = title;
+    $id("status-detail").textContent = detail || "";
   }
 
   let lastStatus = null;
@@ -215,7 +227,8 @@
   }
 
   function queueMessage(text) {
-    const body = document.getElementById("queue-body");
+    const body = $id("queue-body");
+    if (!body) return;
     body.innerHTML = "";
     const tr = document.createElement("tr"), td = document.createElement("td");
     td.colSpan = 5; td.className = "empty-note"; td.textContent = text;
@@ -223,7 +236,8 @@
   }
 
   function showQueue(queued) {
-    const body = document.getElementById("queue-body"), sum = document.getElementById("queue-sum");
+    const body = $id("queue-body"), sum = $id("queue-sum");
+    if (!body) return;
     const running = queued.filter(i => hasLabel(i, "running"));
     const waiting = queued.filter(i => !hasLabel(i, "running")).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
     const rows = [...running, ...waiting];
@@ -303,7 +317,8 @@
   }
 
   async function showResults(done) {
-    const box = document.getElementById("results");
+    const box = $id("results");
+    if (!box) return;
     box.innerHTML = "";
     if (!done.length) { box.innerHTML = '<p class="empty-note">No results yet. The first finished test will appear here.</p>'; return; }
     for (const i of done) {
@@ -391,6 +406,7 @@
 
   const fmt = n => n.toLocaleString("en-US");
   function showDataset() {
+    if (!PAGE.dataset) return;
     const ai = additions.filter(a => a.island).length, ao = additions.length - ai;
     const isl = (base.island || 0) + ai, oth = (base.other || 0) + ao, tot = isl + oth;
     const pct = v => tot ? (100 * v / tot) : 0;
@@ -601,7 +617,7 @@ ${line}
     }
     downloading = false; btn.disabled = false; btn.textContent = "Download the data set";
   }
-  document.getElementById("ds-download").addEventListener("click", downloadDataset);
+  if ($id("ds-download")) $id("ds-download").addEventListener("click", downloadDataset);
 
   // ---------------------------------------------------------------- batch upload (zip with patterns + index)
   // The zip must hold a file called "patterns" (one 105-digit pattern per line) and a file called "index"
@@ -671,7 +687,7 @@ ${line}
     });
     let known = 0;
     try {
-      if (!baseKeys && base && !base.missing) {
+      if (!baseKeys) {
         const r = await fetch(DATA + "keys.txt");
         if (r.ok) baseKeys = new Set((await r.text()).split(/\s+/).filter(Boolean));
       }
@@ -817,20 +833,20 @@ ${line}
   // ---------------------------------------------------------------- refresh loop
   let refreshCount = 0;
   async function refresh() {
-    if (refreshCount % 5 === 0)
+    if (refreshCount % 5 === 0 && PAGE.dataset)
       loadDataset().then(showDataset).catch(() => { if (base) showDataset(); });
     try {
       const open = DEMO ? demoIssues().open : (await gh("/issues?state=open&per_page=100")).filter(i => !i.pull_request);
       showQueue(showStatus(open));
-      if (refreshCount % 5 === 0) {
+      if (refreshCount % 5 === 0 && PAGE.results) {
         const done = DEMO ? demoIssues().done : (await gh("/issues?state=closed&labels=done&sort=updated&direction=desc&per_page=6")).filter(i => !i.pull_request);
         showResults(done);
       }
     } catch (e) {
       queueMessage("The queue could not be loaded right now. The page tries again automatically.");
-      document.getElementById("queue-sum").textContent = "";
-      const res = document.getElementById("results");
-      if (/Loading/.test(res.textContent)) res.innerHTML = '<p class="empty-note">Results could not be loaded right now. The page tries again automatically.</p>';
+      if ($id("queue-sum")) $id("queue-sum").textContent = "";
+      const res = $id("results");
+      if (res && /Loading/.test(res.textContent)) res.innerHTML = '<p class="empty-note">Results could not be loaded right now. The page tries again automatically.</p>';
       if (e.message === "rate") setStatus("unknown", "Status paused for this browser", `GitHub limits how often one browser can check. Updates resume ${e.when ? "at " + e.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "in a few minutes"}.`);
       else if (e.message === "missing") setStatus("unknown", "Not set up yet", `The page can't find the repository ${CFG.owner}/${CFG.repo}. Check owner and repo in assets/config.js.`);
       else setStatus("unknown", "Status unavailable", "The page could not reach GitHub. Check your connection; the page retries automatically.");
@@ -841,19 +857,19 @@ ${line}
   // ---------------------------------------------------------------- static parts
   function setupStatic() {
     const lab = CFG.labName || "";
-    document.getElementById("lab-name").textContent = lab;
-    document.getElementById("lab-name-foot").textContent = lab;
+    ["lab-name", "lab-name-foot"].forEach(id => { if ($id(id)) $id(id).textContent = lab; });
     const repoUrl = `https://github.com/${CFG.owner}/${CFG.repo}`;
-    document.getElementById("repo-link").href = repoUrl;
-    document.getElementById("results-folder").href = `${repoUrl}/tree/${CFG.branch || "main"}/results`;
-    const live = document.getElementById("live");
-    if (CFG.youtubeChannelId) {
+    if ($id("repo-link")) $id("repo-link").href = repoUrl;
+    if ($id("results-folder")) $id("results-folder").href = `${repoUrl}/tree/${CFG.branch || "main"}/results`;
+    const live = $id("live");
+    if (!live) { /* not on this page */ }
+    else if (CFG.youtubeChannelId) {
       live.classList.add("on");
       live.innerHTML = `<iframe title="Live camera on the test rig" src="https://www.youtube.com/embed/live_stream?channel=${encodeURIComponent(CFG.youtubeChannelId)}&autoplay=1&mute=1" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
     } else {
       live.innerHTML = "<p>The camera stream is not set up yet. When it is, you can watch the robot build and test each pattern here.</p>";
     }
-    if (CFG.datasetDoi) {           // archived release (e.g. Zenodo), shown under the download button
+    if (CFG.datasetDoi && document.querySelector(".ds-get")) {           // archived release (e.g. Zenodo), shown under the download button
       const p = document.createElement("p"); p.className = "fineprint";
       p.innerHTML = `Archived release: DOI <a href="https://doi.org/${encodeURI(CFG.datasetDoi)}">${CFG.datasetDoi}</a>`;
       document.querySelector(".ds-get").appendChild(p);
@@ -864,13 +880,15 @@ ${line}
   window.Rig = {
     CFG, RAW, DEMO, N_CELLS, codeIndex, el, thumb, drawLattice, ago, hasLabel, keyOf, demoPattern, demoCurve, fmt,
     getPattern: () => bits.slice(),
-    loadPattern(arr) { bits = arr.slice(); render(); },
-    setChallenge(target, method) { challenge.target = target || null; challenge.method = method || ""; render(); }
+    loadPattern(arr) { bits = arr.slice(); if (PAGE.editor) render(); },
+    setChallenge(target, method) { challenge.target = target || null; challenge.method = method || ""; if (PAGE.editor) render(); }
   };
 
+  window.Rig.pageUrl = pageUrl;
+  window.Rig.PAGE = PAGE;
   setupStatic();
-  setupEditor();
-  setupBatch();
+  if (PAGE.editor) setupEditor();
+  if (PAGE.batch) setupBatch();
   // first refresh once every script on the page (extras.js) has loaded
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh); else setTimeout(refresh, 0);
   setInterval(refresh, (CFG.refreshSeconds || 90) * 1000);

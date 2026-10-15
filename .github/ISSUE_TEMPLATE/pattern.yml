@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Design your pattern on the [rig page](https://adamslab-gibert.github.io/metamaterial-rig/) and press **Submit pattern to the queue**. That fills in the code below. A bot checks it within a minute and adds it to the queue.
+        Design your pattern on the [Submit page](https://adamslab-gibert.github.io/metamaterial-rig/submit.html) and press **Submit pattern to the queue**. That fills in the code below. A bot checks it within a minute and adds it to the queue.
   - type: input
     id: pattern
     attributes:

@@ -103,13 +103,16 @@
     });
     show(0);
   }
-  $("replay-close").onclick = () => { clearInterval(playTimer); playTimer = null; dialog.close ? dialog.close() : dialog.removeAttribute("open"); };
-  dialog.addEventListener("close", () => { clearInterval(playTimer); playTimer = null; });
-  dialog.addEventListener("click", e => { if (e.target === dialog) $("replay-close").click(); });
+  if (dialog) $("replay-close").onclick = () => { clearInterval(playTimer); playTimer = null; dialog.close ? dialog.close() : dialog.removeAttribute("open"); };
+  if (dialog) {
+    dialog.addEventListener("close", () => { clearInterval(playTimer); playTimer = null; });
+    dialog.addEventListener("click", e => { if (e.target === dialog) $("replay-close").click(); });
+  }
 
   // ---------------------------------------------------------------- rig-now panel
   let nowKey = null;
   async function onStatus(s, stale) {
+    if (!$("now")) return;
     const label = $("now-label"), pat = $("now-pattern"), cur = $("now-curve"), note = $("now-note");
     const busy = s && !stale && s.state === "busy" && s.pattern;
     const last = s && s.last;
@@ -163,7 +166,12 @@
   }
   async function setupChallenge() {
     try { targets = (await getJSON("data/challenge.json")).targets; }
-    catch (e) { $("target-view").innerHTML = '<p class="empty-note">The challenge targets could not be loaded.</p>'; return; }
+    catch (e) { if ($("target-view")) $("target-view").innerHTML = '<p class="empty-note">The challenge targets could not be loaded.</p>'; return; }
+    if ($("challenge-banner")) {                       // Submit page: challenge mode from ?challenge=T3
+      const want = (new URLSearchParams(location.search).get("challenge") || "").toUpperCase();
+      if (targets.some(t => t.id === want)) { R.setChallenge(want, ""); drawBanner(); }
+    }
+    if (!$("targets")) return;
     try { board = DEMO ? demoBoard() : await getJSON(`${RAW}/results/leaderboard.json`); } catch (e) { board = []; }
     drawTargets();
     selectTarget(targets[0].id);
@@ -209,8 +217,8 @@
     right.append(h("h3", null, `Target ${id}`),
       h("p", null, `Displacement at 20 N: ${t.max_displacement_mm.toFixed(1)} mm. Buckling events: ${t.buckling_events}. ${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
     const go = h("button", "submit", `Design a pattern for ${id}`); go.type = "button";
-    go.onclick = () => { R.setChallenge(id, ""); drawBanner(); document.getElementById("single").scrollIntoView({ behavior: "smooth" }); };
-    right.append(go, h("p", "fineprint", "Opens the editor in challenge mode. When you submit, you describe your method in the GitHub form; it is shown on the leaderboard."));
+    go.onclick = () => { location.href = R.pageUrl("submit.html", { challenge: id }) + "#single"; };
+    right.append(go, h("p", "fineprint", "Opens the editor on the Submit page in challenge mode. You describe your method there; it is shown on the leaderboard."));
 
     const wrap = h("div", "lb-wrap");
     if (!list.length) wrap.append(h("p", "empty-note", "No entries for this target yet. Be the first."));
@@ -248,15 +256,17 @@
     const c = forceChart([{ ...fromData(t.dataData, t.max_displacement_mm), cls: "target" }], { w: 220, h: 110, xmax: 40, label: `Target ${t.id}` });
     c.svg.classList.add("spark");
     const txt = h("div", "cb-text");
+    const back = h("a", null, "see the target and leaderboard"); back.href = R.pageUrl("challenge.html");
     txt.append(h("p", "cb-title", `Challenge mode: designing for target ${t.id}`),
-      h("p", "fineprint", `Aim for 20 N at ${t.max_displacement_mm.toFixed(1)} mm with ${t.buckling_events} buckling events. The submit button below now sends your pattern to the challenge.`));
+      h("p", "fineprint", `Aim for 20 N at ${t.max_displacement_mm.toFixed(1)} mm with ${t.buckling_events} buckling events. The submit button below now sends your pattern to the challenge. `));
+    txt.lastChild.append(back, ".");
     const lab = h("label", "cb-label", "Your method (filled into the form; you can edit it there)");
     const ta = document.createElement("textarea"); ta.rows = 2; ta.maxLength = 1500; ta.id = "cb-method";
     ta.placeholder = "e.g. nearest neighbour in the data set, then single-cell flips";
     lab.htmlFor = "cb-method";
     ta.oninput = () => R.setChallenge(t.id, ta.value);
     const out = h("button", "cb-exit", "Leave challenge mode"); out.type = "button";
-    out.onclick = () => { R.setChallenge(null); drawBanner(); };
+    out.onclick = () => { R.setChallenge(null); drawBanner(); history.replaceState(null, "", R.pageUrl("submit.html") + "#single"); };
     txt.append(lab, ta, out);
     box.append(c.svg, txt);
   }
@@ -385,7 +395,7 @@
       top.append(facts);
       detail.append(h("h3", null, `Run ${R.fmt(i)}`), top, forceChart([curveOf(i)], { w: 320, h: 190 }).svg);
       const open = h("button", "submit", "Open this pattern in the editor"); open.type = "button";
-      open.onclick = () => { R.loadPattern(bits); document.getElementById("single").scrollIntoView({ behavior: "smooth" }); };
+      open.onclick = () => { location.href = R.pageUrl("submit.html", { pattern: bits.join("") }) + "#single"; };
       const copy = h("button", "ex-copy", "Copy the 105-digit code"); copy.type = "button";
       copy.onclick = async () => { try { await navigator.clipboard.writeText(bits.join("")); copy.textContent = "Copied"; } catch (e) { copy.textContent = bits.join(""); } };
       detail.append(open, copy, h("p", "fineprint", "Row number in the downloaded data set. The curve here is a 50-point preview; the download has all 200 points."));
@@ -397,6 +407,7 @@
     filter();
   }
   function setupExplorer() {
+    if (!$("explorer")) return;
     const start = () => loadExplorer().catch(() => { $("explorer-app").innerHTML = '<p class="empty-note">The explorer data could not be loaded.</p>'; });
     if ("IntersectionObserver" in window) {
       const io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) { io.disconnect(); start(); } }, { rootMargin: "800px" });
@@ -405,6 +416,6 @@
   }
 
   window.RigExtras = { onStatus, openReplay, onPattern: null };
-  setupChallenge();
+  if ($("targets") || $("challenge-banner")) setupChallenge();
   setupExplorer();
 })();

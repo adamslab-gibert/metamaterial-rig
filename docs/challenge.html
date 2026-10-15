@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Challenge · Metamaterial Test Rig</title>
+  <meta name="description" content="Inverse-design benchmark: find a metamaterial pattern that reproduces a secret target force curve. Entries are tested on the real rig and ranked on a public leaderboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">Adams Lab</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html" aria-current="page">Challenge</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Inverse-design challenge</h1>
+      <p class="lede">Ten force curves measured on this rig; their patterns are secret. Find a pattern that reproduces one, the rig tests it, and your score goes on the leaderboard.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="wrap first" id="challenge" aria-labelledby="challenge-title">
+      <h2 id="challenge-title" class="visually-hidden">Targets and leaderboard</h2>
+      <p class="section-note">Each target below is a force curve measured on this rig. Its pattern is secret and not in the data set. Find a pattern that reproduces the curve: the rig tests your entry and scores it by the RMS difference between the two 200-point curves, in newtons (lower is better). The difference in displacement at 20&nbsp;N is shown alongside.</p>
+      <div class="targets" id="targets" role="tablist" aria-label="Challenge targets"></div>
+      <div class="target-view" id="target-view"></div>
+    </section>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">Adams Lab</span>. Source and results: <a id="repo-link" href="#">GitHub repository</a>. Measured data are published under CC BY 4.0.</p>
+    </div>
+  </footer>
+
+  <script src="assets/island.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/extras.js"></script>
+</body>
+</html>

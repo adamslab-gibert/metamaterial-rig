@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Pick a target curve on the [rig page](https://adamslab-gibert.github.io/metamaterial-rig/#challenge), design a pattern that you think reproduces it, and press **Submit to the challenge**. That fills in the target and the pattern below. The rig tests the pattern and the score (RMS force difference of the 200-point curves, in N) is posted here and on the leaderboard.
+        Pick a target curve on the [rig page](https://adamslab-gibert.github.io/metamaterial-rig/challenge.html), design a pattern that you think reproduces it, and press **Submit to the challenge**. That fills in the target and the pattern below. The rig tests the pattern and the score (RMS force difference of the 200-point curves, in N) is posted here and on the leaderboard.
   - type: input
     id: target
     attributes:

@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Submit Patterns · Metamaterial Test Rig</title>
+  <meta name="description" content="Design an insert pattern on the lattice or upload a zip of up to 100 patterns, and queue them on the metamaterial test rig.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">Adams Lab</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html" aria-current="page">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html">Challenge</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Submit patterns</h1>
+      <p class="lede">Choose which cells get a rigid insert. The rig builds and tests your patterns one at a time when it is online.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap submit-intro">
+      <nav class="ways" aria-label="Ways to submit">
+        <a href="#single"><span>Option 1</span>Design one pattern by hand</a>
+        <a href="#batch"><span>Option 2</span>Upload a zip of up to 100 patterns</a>
+      </nav>
+      <p class="section-note">Both join the same queue. Follow your request on the <a href="index.html">Rig page</a>; every result is added to the <a href="data.html">data set</a>.</p>
+    </div>
+    <section class="wrap option first" id="single" aria-labelledby="single-title">
+      <header class="option-head">
+        <p class="kicker">Option 1</p>
+        <h2 id="single-title">Design one pattern</h2>
+      </header>
+      <div class="bench">
+        <div class="specimen">
+          <svg id="editor" class="lattice" role="group" aria-label="Pattern editor: 19 rows of cells. Select a cell to add or remove an insert." viewBox="-1.55 -2 13.1 22"></svg>
+          <p class="hint">Click a cell to add or remove an insert, or drag across cells to paint.</p>
+        </div>
+        <div class="panel">
+          <div class="challenge-banner" id="challenge-banner" hidden></div>
+          <dl class="readout">
+            <div><dt>Inserts</dt><dd id="count">0</dd></div>
+            <div><dt>Empty cells</dt><dd id="empty">105</dd></div>
+            <div><dt>Island algorithm</dt><dd id="island-now">–</dd></div>
+          </dl>
+          <div class="tools">
+            <button type="button" id="btn-clear">Clear</button>
+            <button type="button" id="btn-random">Random pattern</button>
+            <button type="button" id="btn-invert">Invert</button>
+          </div>
+          <label class="code-label" for="code">Pattern code <span>105 digits, bottom row first, 1 = insert</span></label>
+          <textarea id="code" rows="3" spellcheck="false" autocomplete="off"></textarea>
+          <p class="code-msg" id="code-msg" role="status"></p>
+          <a class="submit" id="submit" href="#" target="_blank" rel="noopener">Submit this pattern to the queue</a>
+          <p class="fineprint" id="submit-note">Submitting opens a pre-filled request on GitHub, so you need a free GitHub account. Results are posted on the request and published openly.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap option" id="batch" aria-labelledby="batch-title">
+      <header class="option-head">
+        <p class="kicker">Option 2</p>
+        <h2 id="batch-title">Upload a batch of patterns</h2>
+      </header>
+      <div class="batch-grid">
+        <div class="batch-help">
+          <h3>What to upload</h3>
+          <p>One <strong>.zip</strong> file with two text files inside, for <strong>up to 100 patterns</strong>:</p>
+          <dl class="batch-files">
+            <dt><code>patterns</code> <span>(or patterns.txt)</span></dt>
+            <dd>One pattern per line: 105 digits of 0 and 1, bottom row first, left to right, 1 = insert.</dd>
+            <dt><code>index</code> <span>(or index.txt)</span></dt>
+            <dd>One number per line: 0 for the first pattern, 1 for the second, and so on. Same number of lines as <code>patterns</code>.</dd>
+          </dl>
+          <p class="batch-example-title">Example: the first lines of each file</p>
+          <pre class="batch-example"><span>patterns</span>
+111111111111111111111100111100111110111110…
+111110111101111011110110101100011010111110…
+<span>index</span>
+0
+1</pre>
+          <p><a href="assets/example_batch.zip" download>Download an example zip</a> (5 patterns) to use as a template.</p>
+        </div>
+        <div class="batch-upload">
+          <div class="drop" id="drop">
+            <input type="file" id="zip-input" accept=".zip,application/zip" class="visually-hidden">
+            <label for="zip-input" class="drop-button">Choose a zip file</label>
+            <span class="drop-hint">or drop it here</span>
+          </div>
+          <p class="fineprint">The zip is checked here in your browser. Nothing is sent until you press submit.</p>
+        </div>
+      </div>
+      <div class="check" id="check" aria-live="polite" hidden></div>
+    </section>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">Adams Lab</span>. Source and results: <a id="repo-link" href="#">GitHub repository</a>. Measured data are published under CC BY 4.0.</p>
+    </div>
+  </footer>
+
+  <script src="assets/jszip.min.js"></script>
+  <script src="assets/island.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/extras.js"></script>
+</body>
+</html>

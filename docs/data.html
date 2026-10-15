@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Data Set · Metamaterial Test Rig</title>
+  <meta name="description" content="Explore and download the measured force-displacement data of the programmable metamaterial: patterns, force curves and displacements.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css">
+  <script src="assets/config.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">Adams Lab</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html">Submit</a>
+          <a href="data.html" aria-current="page">Data</a>
+          <a href="challenge.html">Challenge</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>The data set</h1>
+      <p class="lede">Every pattern measured on this rig with its force-displacement curve, including each pattern tested from the public queue. Free to use under CC BY 4.0.</p>
+    </div>
+  </header>
+
+  <main id="main">
+  <section class="wrap dataset first" aria-labelledby="ds-title">
+    <div class="ds-head">
+      <h2 id="ds-title">Size and download</h2>
+      <p class="ds-total"><span id="ds-total">–</span> measured runs</p>
+    </div>
+    <div class="ds-bar" id="ds-bar" aria-hidden="true"><span class="isl"></span><span class="oth"></span></div>
+    <div class="ds-bins">
+      <div class="ds-bin isl">
+        <p class="ds-label">Follow the island algorithm</p>
+        <p class="ds-num" id="ds-island">–</p>
+        <p class="ds-sub" id="ds-island-sub"></p>
+      </div>
+      <div class="ds-bin oth">
+        <p class="ds-label">Do not follow it</p>
+        <p class="ds-num" id="ds-other">–</p>
+        <p class="ds-sub" id="ds-other-sub"></p>
+      </div>
+      <div class="ds-get">
+        <button type="button" class="submit" id="ds-download" disabled>Download the data set</button>
+        <p class="fineprint" id="ds-download-note">Patterns, force curves and displacements as NumPy files, including every pattern tested from the queue so far. CC BY 4.0.</p>
+      </div>
+    </div>
+    <p class="fineprint ds-rule">A pattern follows the island algorithm when every empty cell touches at least two separate islands of inserts (cells touching at an edge or a corner). Each pattern tested from the queue is checked with this rule and added to its group.</p>
+  </section>
+    <section class="wrap block" id="explorer" aria-labelledby="explorer-title">
+      <h2 id="explorer-title">Explore the data set</h2>
+      <p class="section-note">Every measured run as a point. Choose what to plot, filter the runs, and click a point to see its pattern and curve. You can open any pattern in the <a href="submit.html">editor</a>.</p>
+      <div class="explorer" id="explorer-app"><p class="empty-note">Loading the explorer…</p></div>
+    </section>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">Adams Lab</span>. Source and results: <a id="repo-link" href="#">GitHub repository</a>. Measured data are published under CC BY 4.0.</p>
+    </div>
+  </footer>
+
+  <script src="assets/jszip.min.js"></script>
+  <script src="assets/island.js"></script>
+  <script src="assets/app.js"></script>
+  <script src="assets/extras.js"></script>
+</body>
+</html>

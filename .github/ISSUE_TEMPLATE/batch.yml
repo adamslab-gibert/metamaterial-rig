@@ -6,7 +6,7 @@ body:
   - type: markdown
     attributes:
       value: |
-        Upload your zip (a `patterns` file and an `index` file) on the [rig page](https://adamslab-gibert.github.io/metamaterial-rig/). The page checks it and fills in the patterns below. A bot checks them again within a minute and adds the batch to the queue.
+        Upload your zip (a `patterns` file and an `index` file) on the [Submit page](https://adamslab-gibert.github.io/metamaterial-rig/submit.html). The page checks it and fills in the patterns below. A bot checks them again within a minute and adds the batch to the queue.
   - type: textarea
     id: patterns
     attributes:

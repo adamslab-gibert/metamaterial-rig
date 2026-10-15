@@ -11,7 +11,7 @@ People anywhere can design an insert pattern on the web page and queue it. The r
 
 | Folder | What it is |
 |---|---|
-| `docs/` | The web page (static; served by GitHub Pages). Settings in `docs/assets/config.js`; the island-algorithm check is in `docs/assets/island.js`; the data set offered for download is in `docs/data/` (made by `lab/build_web_dataset.py`). |
+| `docs/` | The website (static; served by GitHub Pages): `index.html` (rig status, live view, queue, results), `submit.html` (design one pattern, upload a batch), `data.html` (counts, download, explorer), `challenge.html` (targets, leaderboard). Shared code in `assets/app.js` and `assets/extras.js`. Settings in `docs/assets/config.js`; the island-algorithm check is in `docs/assets/island.js`; the data set offered for download is in `docs/data/` (made by `lab/build_web_dataset.py`). |
 | `.github/ISSUE_TEMPLATE/pattern.yml` | The request form the page opens, pre-filled with the pattern. |
 | `.github/workflows/validate-pattern.yml` | Checks each request (105 digits, data-sharing box, at most 3 waiting per person) and labels it `queued` or `invalid`. |
 | `lab/agent.py` | Runs on the rig computer. Publishes the machine status, hands queued patterns to the rig program, publishes results. |
