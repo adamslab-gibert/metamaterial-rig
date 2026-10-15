@@ -1,4 +1,4 @@
-// Site settings. Edit these after you create the repository.
+// Website settings. See section 3 of the README.
 window.RIG_CONFIG = {
   owner: "adamslab-gibert",          // GitHub user or organisation that owns the repository
   repo: "metamaterial-rig",          // repository name (the one holding .github/ and results/)
@@ -6,8 +6,7 @@ window.RIG_CONFIG = {
   labName: "Adams Lab",
   // YouTube channel that streams the rig camera. Leave "" to show a placeholder instead.
   youtubeChannelId: "",
-  // Dataset download (Zenodo or GitHub Release) and its DOI. Leave "" to hide.
-  datasetUrl: "",
+  // DOI of an archived release of the data set (e.g. Zenodo), shown under the download button. Leave "" to hide.
   datasetDoi: "",
   // The machine counts as offline when its status has not been refreshed for this many minutes.
   offlineAfterMinutes: 6,

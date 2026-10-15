@@ -3,3 +3,4 @@ lab/agent.log
 lab/__pycache__/
 web_queue/
 web_queue_test/
+*SECRET*
