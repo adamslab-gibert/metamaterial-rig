@@ -1,0 +1,12 @@
+{
+  "owner": "adamslab-gibert",
+  "repo": "metamaterial-rig",
+  "branch": "main",
+  "token_env": "RIG_GITHUB_TOKEN",
+  "queue_dir": "C:/data/research/projects/ProgramME/PME/web_queue",
+  "poll_seconds": 20,
+  "heartbeat_seconds": 120,
+  "rig_stale_seconds": 60,
+  "max_frames": 40,
+  "frame_width": 720
+}

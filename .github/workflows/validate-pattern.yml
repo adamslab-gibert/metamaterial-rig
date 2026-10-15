@@ -1,0 +1,36 @@
+name: Check pattern request
+
+on:
+  issues:
+    types: [opened, edited, reopened, labeled]
+
+permissions:
+  issues: write
+  contents: read
+
+concurrency:
+  group: pattern-${{ github.event.issue.number }}
+  cancel-in-progress: false
+
+jobs:
+  check:
+    # only requests made from the form; the 'labeled' event only matters when the form label is added
+    if: >-
+      contains(github.event.issue.labels.*.name, 'pattern-request') &&
+      (github.event.action != 'labeled' || github.event.label.name == 'pattern-request')
+    runs-on: ubuntu-latest
+    env:
+      MAX_OPEN_PER_USER: "3"        # patterns one person may have waiting at once
+      REQUIRE_APPROVAL: "false"     # "true": a lab member swaps 'awaiting-approval' for 'queued' by hand
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: |
+            .github/scripts
+            docs/data/challenge.json
+          sparse-checkout-cone-mode: false
+      - uses: actions/github-script@v7
+        with:
+          script: |
+            const { run } = require('./.github/scripts/validate.js');
+            await run({ github, context, core });

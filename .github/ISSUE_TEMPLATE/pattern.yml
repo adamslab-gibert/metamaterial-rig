@@ -1,0 +1,29 @@
+name: Pattern request
+description: Queue an insert pattern to be built and tested on the rig
+title: "Pattern request"
+labels: ["pattern-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Design your pattern on the [rig page](https://adamslab-gibert.github.io/metamaterial-rig/) and press **Submit pattern to the queue**. That fills in the code below. A bot checks it within a minute and adds it to the queue.
+  - type: input
+    id: pattern
+    attributes:
+      label: Pattern (105 digits, 1 = insert)
+      description: Bottom row first, left to right. Rows alternate 6 and 5 cells.
+      placeholder: "011010010101001011010111010011000111011110110100110010010110001101101011001010100110010110001101011101011"
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What is the pattern for? (optional)
+      description: A sentence helps us see how the rig is used.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Data sharing
+      options:
+        - label: I agree that the measured data, photos and this request are published openly under CC BY 4.0.
+          required: true
