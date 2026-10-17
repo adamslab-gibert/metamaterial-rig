@@ -202,20 +202,19 @@
 
   let lastStatus = null;
   const inQueue = i => hasLabel(i, "queued") || hasLabel(i, "running") || hasLabel(i, "awaiting-approval");
-  function showStatus(issues) {
-    const st = issues.find(i => hasLabel(i, "machine-status"));
-    const queued = issues.filter(inQueue);
-    const s = st ? statusFromBody(st.body) : null;
-    const updated = s && s.updated ? s.updated : st && st.updated_at;
-    const stale = !updated || (Date.now() - new Date(updated).getTime()) > (CFG.offlineAfterMinutes || 6) * 60000;
+  // The status shown on the page comes from the live channel (Firebase, every few seconds) when it is
+  // configured and working, otherwise from GitHub's "Machine status" request (every 1-2 minutes).
+  function renderStatus(s, stale, updated, how) {
     lastStatus = s && !stale ? s : null;
     if (window.RigExtras && window.RigExtras.onStatus) window.RigExtras.onStatus(s, stale);
     const per = s && s.minutes_per_test ? ` A test takes about ${Math.round(s.minutes_per_test)} min.` : "";
     if (!s || stale) {
       setStatus("offline", "Offline", (updated ? `Last seen ${ago(updated)}. ` : "") +
         "You can still submit patterns; they wait in the queue until the machine is back.");
+    } else if (s.state === "offline") {
+      setStatus("offline", "Offline", (s.message ? s.message + " " : "") + "You can still submit patterns; they wait in the queue until the machine is back.");
     } else if (s.state === "ready") {
-      setStatus("ready", "Online and ready", (queued.length ? "The next request in the queue starts shortly." : "Submit a pattern and it starts within a few minutes.") + per);
+      setStatus("ready", "Online and ready", (lastQueued.length ? "The next request in the queue starts shortly." : "Submit a pattern and it starts within a few minutes.") + per);
     } else if (s.state === "busy") {
       const what = s.batch_index != null ? `Testing batch #${s.job}: pattern ${s.batch_index + 1}${s.batch_total ? " of " + s.batch_total : ""}.`
         : s.job ? `Testing pattern #${s.job}.` : "";
@@ -223,7 +222,79 @@
     } else {
       setStatus("paused", "Online, not taking new tests", s.message || "The operator has paused the queue. Submitted patterns keep their place.");
     }
-    return queued;
+    const pill = $id("rig-pill");
+    if (pill) pill.dataset.source = how || "github";
+  }
+
+  let lastQueued = [];
+  function showStatus(issues) {
+    const st = issues.find(i => hasLabel(i, "machine-status"));
+    lastQueued = issues.filter(inQueue);
+    if (!liveInCharge()) {
+      const s = st ? statusFromBody(st.body) : null;
+      const updated = s && s.updated ? s.updated : st && st.updated_at;
+      const stale = !updated || (Date.now() - new Date(updated).getTime()) > (CFG.offlineAfterMinutes || 6) * 60000;
+      renderStatus(s, stale, updated, "github");
+    }
+    return lastQueued;
+  }
+
+  // ---------------------------------------------------------------- live status (Firebase Realtime Database)
+  // The lab agent writes /rig/beat (server time) every few seconds and /rig/state when it changes.
+  // The page streams /rig with an EventSource (Firebase REST streaming) and judges freshness by when it
+  // RECEIVES heartbeats, so visitors' clocks do not matter. It only listens while the tab is visible.
+  const LIVE = { url: (CFG.liveStatusUrl || "").replace(/\/+$/, ""), es: null, data: {}, ok: false,
+    openedAt: 0, lastBeatAt: 0, beats: 0, failures: 0 };
+  const LIVE_OFFLINE_MS = (CFG.liveOfflineSeconds || 20) * 1000;
+  // The live channel decides once it has seen a heartbeat, or has been connected long enough to know there is none.
+  function liveInCharge() { return LIVE.ok && LIVE.es && !DEMO && (LIVE.lastBeatAt > 0 || Date.now() - LIVE.openedAt >= LIVE_OFFLINE_MS); }
+  function liveApply(path, value, merge) {
+    const parts = path.split("/").filter(Boolean);
+    if (!parts.length) { LIVE.data = merge ? Object.assign({}, LIVE.data, value) : (value || {}); return; }
+    let o = LIVE.data;
+    parts.slice(0, -1).forEach(k => { o[k] = o[k] && typeof o[k] === "object" ? o[k] : {}; o = o[k]; });
+    const last = parts[parts.length - 1];
+    o[last] = merge && o[last] && typeof o[last] === "object" ? Object.assign({}, o[last], value) : value;
+  }
+  function liveTick() {
+    if (!liveInCharge()) return;            // until then GitHub's status stays on the page
+    const now = Date.now();
+    if (LIVE.lastBeatAt && now - LIVE.lastBeatAt < LIVE_OFFLINE_MS) renderStatus(LIVE.data.state || null, false, null, "live");
+    else if (now - LIVE.openedAt >= LIVE_OFFLINE_MS)       // connected, but no heartbeat: the lab computer is not sending
+      renderStatus(LIVE.data.state || null, true, LIVE.lastBeatAt ? new Date(LIVE.lastBeatAt).toISOString() : null, "live");
+    // else: just connected, waiting for the first heartbeat; keep what is shown
+  }
+  function liveConnect() {
+    if (!LIVE.url || DEMO || LIVE.es || !window.EventSource || document.hidden) return;
+    const es = new EventSource(LIVE.url + "/rig.json");
+    LIVE.es = es; LIVE.openedAt = Date.now();
+    const onData = merge => ev => {
+      let m; try { m = JSON.parse(ev.data); } catch (e) { return; }
+      if (!m || typeof m.path !== "string") return;
+      const touchesBeat = m.path === "/beat" || (m.path === "/" && m.data && "beat" in m.data);
+      liveApply(m.path, m.data, merge);
+      if (touchesBeat && LIVE.beats++ > 0) LIVE.lastBeatAt = Date.now();   // the first value is the stored one: not proof of life
+      LIVE.ok = true; LIVE.failures = 0;
+      liveTick();
+    };
+    es.addEventListener("put", onData(false));
+    es.addEventListener("patch", onData(true));
+    ["cancel", "auth_revoked"].forEach(t => es.addEventListener(t, () => liveClose(true)));
+    es.onerror = () => {
+      if (es.readyState === EventSource.CLOSED || !LIVE.ok) {
+        if (++LIVE.failures >= 3) liveClose(true);           // give up for now; GitHub status takes over
+      }
+    };
+  }
+  function liveClose(failed) {
+    if (LIVE.es) LIVE.es.close();
+    LIVE.es = null; LIVE.ok = false; LIVE.beats = 0;
+    if (failed) setTimeout(liveConnect, 60000);              // try again in a minute
+  }
+  if (LIVE.url && !DEMO) {
+    document.addEventListener("visibilitychange", () => { if (document.hidden) liveClose(false); else liveConnect(); });
+    setInterval(liveTick, 2000);
+    liveConnect();
   }
 
   function queueMessage(text) {
@@ -847,7 +918,8 @@ ${line}
       if ($id("queue-sum")) $id("queue-sum").textContent = "";
       const res = $id("results");
       if (res && /Loading/.test(res.textContent)) res.innerHTML = '<p class="empty-note">Results could not be loaded right now. The page tries again automatically.</p>';
-      if (e.message === "rate") setStatus("unknown", "Status paused for this browser", `GitHub limits how often one browser can check. Updates resume ${e.when ? "at " + e.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "in a few minutes"}.`);
+      if (liveInCharge()) { /* the live channel still shows the machine status */ }
+      else if (e.message === "rate") setStatus("unknown", "Status paused for this browser", `GitHub limits how often one browser can check. Updates resume ${e.when ? "at " + e.when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }) : "in a few minutes"}.`);
       else if (e.message === "missing") setStatus("unknown", "Not set up yet", `The page can't find the repository ${CFG.owner}/${CFG.repo}. Check owner and repo in assets/config.js.`);
       else setStatus("unknown", "Status unavailable", "The page could not reach GitHub. Check your connection; the page retries automatically.");
     }

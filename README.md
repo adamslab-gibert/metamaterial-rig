@@ -96,6 +96,7 @@ Visitors never control the hardware. They can only add patterns to a queue; the 
 | `lab/simulate_rig.py` | A stand-in for the rig program, to test the whole system without the machine. |
 | `lab/build_web_dataset.py` | Builds `docs/data/` from the lab's `.npy` files (removes repeated patterns, holds out challenge targets, makes the explorer files). |
 | `lab/make_challenge.py` | Chooses challenge targets and writes the public curves and the secret patterns. |
+| `lab/firebase_rules.json` | Access rules for the optional live-status database (anyone may read `/rig`, nobody may write except the lab computer's key). |
 | **`results/`** | **Written by the agent:** one folder per tested request, plus `index.csv`, `dataset_additions.csv` and `leaderboard.json`. |
 
 Not in this repository (kept in the lab): the rig program `rig_control_backend_web.py`, the agent's token and `agent_config.json`, and `challenge_targets_SECRET.json` (the answers to the challenge).
@@ -107,7 +108,7 @@ Not in this repository (kept in the lab): the rig program `rig_control_backend_w
 Four pages share a top bar with the page links and a small rig-status badge.
 
 **Rig** (`index.html`)
-- *Machine status*: **Online and ready**, **Running a test** (for a batch, "pattern 5 of 12"), **Online, not taking new tests** (paused, not set up, or after a failure) or **Offline** (no update from the lab computer for 6 minutes).
+- *Machine status* (live within seconds when the [live status](#live-status-optional) is set up, otherwise from GitHub within 1–2 minutes): **Online and ready**, **Running a test** (for a batch, "pattern 5 of 12"), **Online, not taking new tests** (paused, not set up, or after a failure) or **Offline** (no update from the lab computer for 6 minutes).
 - *On the rig*: the pattern being tested; after the test, its pattern and force curve, with a **Replay** button.
 - *Live view*: the YouTube live stream of the lab's channel (`youtubeChannelId` in `config.js`).
 - *Queue*: every waiting request with its place, size, status and an estimate of the machine time left.
@@ -134,7 +135,9 @@ Four pages share a top bar with the page links and a small rig-status badge.
 | `labName` | Shown at the top and bottom of each page and in the download's README. |
 | `youtubeChannelId` | YouTube channel ID (starts with `UC`) for the live view. Empty = placeholder text. |
 | `datasetDoi` | DOI of an archived release (e.g. Zenodo). Shown under the download button when set. |
-| `offlineAfterMinutes` | The rig counts as offline when its status is older than this (default 6). |
+| `liveStatusUrl` | Address of the Firebase Realtime Database for the live status, e.g. `https://metamaterial-rig-default-rtdb.firebaseio.com`. Empty = GitHub status only. |
+| `liveOfflineSeconds` | With the live status: offline when no heartbeat has arrived for this long (default 20). |
+| `offlineAfterMinutes` | Without it: the rig counts as offline when the GitHub status is older than this (default 6). |
 | `refreshSeconds` | How often each page refreshes (default 90). Each refresh uses one or two GitHub API calls; GitHub allows 60 per hour per visitor. |
 
 ---
@@ -209,7 +212,8 @@ Settings in `lab/agent_config.json` (copy from `agent_config.example.json`):
 | `queue_dir` | The `web_queue` folder inside the rig program's folder. |
 | `poll_seconds` | Cycle time (20). |
 | `heartbeat_seconds` | Publish the status at least this often (120). |
-| `rig_stale_seconds` | The rig program counts as closed if its status file is older than this (60). |
+| `rig_stale_seconds` | The rig program counts as closed if its status file is older than this (10). |
+| `firebase_url`, `firebase_key_file`, `live_seconds` | Live status (optional): the database address, the path of the private key file on this computer, and the heartbeat period (5 s). |
 | `max_frames`, `frame_width` | Photos published per test (40) and their width in pixels (720). |
 
 ### Rig program with the web-queue add-on
@@ -239,6 +243,17 @@ The camera is set by `CAMERA_NAME` in the rig program. `"OBS Virtual Camera"` sh
 | `outbox/<job>/` | rig program | Results; `done.json` is written last. |
 | `archive/<job>/` | agent | Results after they were published. |
 | `agent_state.json` | agent | The agent's memory (current job, batch progress, test durations). |
+
+### Live status (optional)
+
+GitHub's status request is slow for visitors (the page may only ask GitHub about once a minute), so the rig can also publish its status through a free **Firebase Realtime Database** (Spark plan: no cost; 100 visitors connected at once, 10 GB downloaded per month).
+
+- The agent runs a background thread that writes a heartbeat (`/rig/beat`, server time) every `live_seconds` and the full status (`/rig/state`) whenever it changes. It authenticates with a service-account key file kept only on the rig computer (`pip install google-auth`).
+- The website streams `/rig` (an EventSource on the database's REST address) while the tab is visible. It shows the status as soon as it changes, and **Offline** when no heartbeat has arrived for `liveOfflineSeconds`. It judges this by when heartbeats arrive, so visitors' clocks do not matter.
+- If the database is not configured or cannot be reached, everything falls back to the GitHub status. The agent keeps updating the GitHub status request either way.
+- Rules (`lab/firebase_rules.json`): anyone may read `/rig`, nobody may write; the agent's key is not subject to the rules.
+
+Result: the website shows a stopped rig program within about 10–15 s and a stopped agent or lab computer within about 20 s (instead of 1.5–7.5 min).
 
 ---
 
@@ -313,14 +328,15 @@ Current contents: **22,166 runs**, each pattern once. 19,654 runs follow the isl
 
 ### Rig computer (once)
 
-1. Install Python packages: `pip install requests pillow matplotlib`
+1. Install Python packages: `pip install requests pillow matplotlib google-auth` (`google-auth` only for the live status)
 2. Create a GitHub token **for this computer only**: GitHub → Settings → Developer settings → *Fine-grained tokens* → Generate.
    - Resource owner `adamslab-gibert`; repository access *Only select repositories* → `metamaterial-rig`.
    - Permissions: **Issues: Read and write**, **Contents: Read and write**.
    - Store it as an environment variable: `setx RIG_GITHUB_TOKEN "github_pat_..."` (Windows), then open a new terminal. Never put it in a file in this repository or paste it into a chat.
 3. Copy `lab/agent_config.example.json` to `lab/agent_config.json` and set `queue_dir` to the `web_queue` folder inside the rig program's folder.
 4. Use the lab's `rig_control_backend_web.py` (rig program with the add-on), kept in the lab.
-5. For the live stream: install OBS, add the C920 as a "Video Capture Device", set the video to 1920×1080 and click **Start Virtual Camera** *before* starting the rig program. Stream to YouTube and put the channel ID in `config.js`. Keep the OBS scene to the camera picture only: anything added in OBS also appears in the test photos.
+5. Live status (optional): create a Firebase project with a Realtime Database (rules from `lab/firebase_rules.json`), download a service-account key (Project settings → Service accounts → Generate new private key) to this computer only, and set `firebase_url` and `firebase_key_file` in `agent_config.json` and `liveStatusUrl` in `docs/assets/config.js`.
+6. For the live stream: install OBS, add the C920 as a "Video Capture Device", set the video to 1920×1080 and click **Start Virtual Camera** *before* starting the rig program. Stream to YouTube and put the channel ID in `config.js`. Keep the OBS scene to the camera picture only: anything added in OBS also appears in the test photos.
 
 ### Test without the machine
 

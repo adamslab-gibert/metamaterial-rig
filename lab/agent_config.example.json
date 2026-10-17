@@ -6,7 +6,10 @@
   "queue_dir": "C:/data/research/projects/ProgramME/PME/web_queue",
   "poll_seconds": 20,
   "heartbeat_seconds": 120,
-  "rig_stale_seconds": 60,
+  "rig_stale_seconds": 10,
   "max_frames": 40,
-  "frame_width": 720
+  "frame_width": 720,
+  "firebase_url": "",
+  "firebase_key_file": "",
+  "live_seconds": 5
 }

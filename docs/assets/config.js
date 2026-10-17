@@ -8,7 +8,12 @@ window.RIG_CONFIG = {
   youtubeChannelId: "",
   // DOI of an archived release of the data set (e.g. Zenodo), shown under the download button. Leave "" to hide.
   datasetDoi: "",
-  // The machine counts as offline when its status has not been refreshed for this many minutes.
+  // Live status (optional, free Firebase Realtime Database): the database URL, e.g.
+  // "https://metamaterial-rig-default-rtdb.firebaseio.com". Leave "" to use only GitHub's status request.
+  liveStatusUrl: "",
+  // With the live status: the machine counts as offline when no heartbeat has arrived for this many seconds.
+  liveOfflineSeconds: 20,
+  // Without it (GitHub status only): offline when the status has not been refreshed for this many minutes.
   offlineAfterMinutes: 6,
   // How often the page refreshes status and queue (seconds). One GitHub API call per refresh.
   refreshSeconds: 90

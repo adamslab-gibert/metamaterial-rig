@@ -32,6 +32,7 @@ import os
 import shutil
 import statistics
 import sys
+import threading
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -319,6 +320,49 @@ class GitHub:
         return "https://github.com/%s/%s/tree/%s/%s" % (self.owner, self.repo, self.branch, path)
 
 
+# ------------------------------------------------------------------ live status (Firebase Realtime Database)
+class LiveStatus:
+    """Optional fast status channel for the website (free Firebase Realtime Database).
+
+    Every `live_seconds` the agent writes a heartbeat to /rig/beat (server time), and the full public
+    status to /rig/state whenever it changes (and at least every minute). The website listens to /rig
+    and shows Offline when the heartbeat stops. The database rules allow anyone to read /rig and nobody
+    to write; the agent writes with a service-account key (kept only on the rig computer), which the
+    rules do not apply to. GitHub's "Machine status" request is still updated as the fallback.
+    """
+    SCOPES = ["https://www.googleapis.com/auth/firebase.database", "https://www.googleapis.com/auth/userinfo.email"]
+
+    def __init__(self, url, key_file, session=None, token_provider=None):
+        self.url = url.rstrip("/")
+        self.key_file = key_file
+        self.s = session or requests.Session()
+        self._creds = None
+        self._token_provider = token_provider          # tests pass a function returning a token
+
+    def token(self):
+        if self._token_provider:
+            return self._token_provider()
+        if self._creds is None:
+            from google.oauth2 import service_account   # pip install google-auth
+            self._creds = service_account.Credentials.from_service_account_file(self.key_file, scopes=self.SCOPES)
+        if not self._creds.valid:
+            from google.auth.transport.requests import Request
+            self._creds.refresh(Request())
+        return self._creds.token
+
+    def _send(self, method, path, value):
+        r = self.s.request(method, "%s/%s.json" % (self.url, path.strip("/")), data=json.dumps(value),
+                           headers={"Authorization": "Bearer " + self.token()}, timeout=10)
+        if r.status_code >= 300:
+            raise RuntimeError("live status %s %s: %s %s" % (method, path, r.status_code, r.text[:200]))
+
+    def beat(self):
+        self._send("PUT", "rig/beat", {".sv": "timestamp"})
+
+    def state(self, s):
+        self._send("PUT", "rig/state", dict(s, updated={".sv": "timestamp"}))
+
+
 # ------------------------------------------------------------------ the agent
 STATUS_TITLE = "Machine status (updated automatically)"
 STATUS_TEXT = {"ready": "Online and ready", "busy": "Running a test", "paused": "Online, not taking new tests",
@@ -338,6 +382,38 @@ class Agent:
         self.state.setdefault("durations_min", [])
         self.status_issue = None
         self.last_published = (None, 0.0)
+        self.live = None
+        if cfg.get("firebase_url") and (cfg.get("firebase_key_file") or cfg.get("_firebase_token")):
+            self.live = LiveStatus(cfg["firebase_url"], cfg.get("firebase_key_file", ""),
+                                   token_provider=cfg.get("_firebase_token"))
+
+    def start_live(self):
+        """Background thread: heartbeat + status to the live channel, independent of the GitHub loop
+        (which can be busy uploading results for a while)."""
+        if not self.live:
+            return None
+        t = threading.Thread(target=self.live_loop, name="live-status", daemon=True)
+        t.start()
+        return t
+
+    def live_loop(self, rounds=None):
+        period = float(self.cfg.get("live_seconds", 5))
+        last_key, last_sent, last_err, k = None, 0.0, 0.0, 0
+        while rounds is None or k < rounds:
+            k += 1
+            try:
+                s = self.public_state(self.rig_status())
+                key = json.dumps(s, sort_keys=True)
+                if key != last_key or time.time() - last_sent > 60:
+                    self.live.state(s)
+                    last_key, last_sent = key, time.time()
+                self.live.beat()
+            except Exception as e:                   # never stop; report at most once a minute
+                if time.time() - last_err > 60:
+                    log.warning("live status: %s", e)
+                    last_err = time.time()
+            if rounds is None or k < rounds:
+                time.sleep(period)
 
     def save_state(self):
         write_json_atomic(self.state_file, self.state)
@@ -832,6 +908,8 @@ def main(argv):
         agent.tick()
         return
     log.info("agent started for %s/%s, queue folder %s", cfg["owner"], cfg["repo"], q)
+    if agent.start_live():
+        log.info("live status on (%s, every %ss)", cfg["firebase_url"], cfg.get("live_seconds", 5))
     while True:
         try:
             agent.tick()
