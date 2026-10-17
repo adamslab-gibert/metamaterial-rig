@@ -70,6 +70,38 @@ def challenge_score(sub_dataData, sub_max, target):
     return round(rms, 4), round(sub_max - target["max_displacement_mm"], 3)
 
 
+MAX_CHALLENGE_ENTRIES = 10
+
+
+def parse_challenge_entries(body):
+    """Challenge entries uploaded as a zip: lines "T3 <pattern>" under the Entries heading, the pattern as
+    105 digits or 27 hex digits. At most one pattern per target. Same rules as validate.js.
+    Returns ([(target, code), ...], None) or (None, reason)."""
+    text = section(body, "entries")
+    lines = [l.strip() for l in text.split("\n") if l.strip() and not l.strip().startswith("```")]
+    if not lines:
+        return None, "The Entries field is empty."
+    if len(lines) > MAX_CHALLENGE_ENTRIES:
+        return None, "At most %d entries per request." % MAX_CHALLENGE_ENTRIES
+    out, seen = [], set()
+    for k, l in enumerate(lines):
+        parts = l.replace(",", " ").split()
+        if len(parts) != 2:
+            return None, "Line %d should be a target and a pattern." % (k + 1)
+        tid, p = parts[0].upper(), parts[1]
+        if len(p) == N_CELLS and not set(p) - set("01"):
+            code = p
+        elif len(p) == 27 and p[0] in "01" and not set(p.lower()) - set("0123456789abcdef"):
+            code = format(int(p, 16), "0%db" % N_CELLS)
+        else:
+            return None, "Line %d: the pattern is not valid." % (k + 1)
+        if tid in seen:
+            return None, "Target %s appears more than once." % tid
+        seen.add(tid)
+        out.append((tid, code))
+    return out, None
+
+
 def parse_batch(body):
     """Same rules as parseBatch in .github/scripts/validate.js. Returns (codes, None) or (None, reason).
     One pattern per line in index order, as 105 digits or as 27 hex digits."""
@@ -405,7 +437,13 @@ class Agent:
         for issue in self.queued():
             n = issue["number"]
             if "batch-request" in self.gh.labels_of(issue):
-                codes, why = parse_batch(issue.get("body"))
+                targets_of = None
+                if "challenge" in self.gh.labels_of(issue):
+                    entries, why = parse_challenge_entries(issue.get("body"))
+                    codes = [c for _, c in entries] if entries else None
+                    targets_of = [t for t, _ in entries] if entries else None
+                else:
+                    codes, why = parse_batch(issue.get("body"))
                 if not codes:
                     self.gh.remove_label(n, "queued")
                     self.gh.add_labels(n, ["invalid"])
@@ -413,6 +451,8 @@ class Agent:
                     continue
                 self.state["batch"] = {"issue": n, "codes": codes, "next": 0, "results": {},
                                        "submitted_by": issue["user"]["login"]}
+                if targets_of:                       # challenge entries: each pattern is scored against its target
+                    self.state["batch"].update(targets=targets_of, method=section(issue.get("body"), "method")[:1500])
                 self.save_state()
                 self.gh.remove_label(n, "queued")
                 self.gh.add_labels(n, ["running"])
@@ -569,6 +609,12 @@ class Agent:
             files, curve, _, _ = self.result_files(n, folder, info, b["submitted_by"], base + "%d/" % k, batch_index=k)
             entry.update(status=curve["status"], max_displacement_mm=round(curve["max_displacement_mm"], 3),
                          force_N=[round(v, 3) for v in curve["force_N"]], tested_at=info.get("finished") or now_iso())
+            if b.get("targets"):
+                tid = b["targets"][k]
+                entry["target"] = tid
+                res = self.add_to_leaderboard(n, b["submitted_by"], tid, b.get("method", ""), curve, files,
+                                              b["codes"][k], base + "%d/curve.json" % k, batch_index=k)
+                entry.update(res)
         else:
             entry.update(status="failed", message=info.get("message", "unknown reason"))
             self.gh.comment(n, "**Pattern %d of this batch did not finish.** %s\n\nThe rest of the batch continues once a lab "
@@ -587,9 +633,24 @@ class Agent:
             return
         n, rows = b["issue"], [b["results"][str(i)] for i in range(len(b["codes"]))]
         ok = [r for r in rows if r["status"] == "ok"]
-        lines = ["**Batch finished: %d of %d patterns tested.**" % (len(ok), len(rows)), "",
-                 "| Index | Inserts | 20 N reached at | Result |", "|---:|---:|---:|---|"]
-        for r in rows:
+        if b.get("targets"):
+            lines = ["**Challenge entries finished: %d of %d patterns tested and scored.**" % (len(ok), len(rows)), "",
+                     "| Target | Inserts | 20 N reached at | Score (N) | Rank | Result |", "|---|---:|---:|---:|---:|---|"]
+            for r in rows:
+                lines.append("| %s | %d | %s | %s | %s | %s |" % (
+                    r.get("target", b["targets"][r["index"]]), r["pattern"].count("1"),
+                    "%.1f mm" % r["max_displacement_mm"] if r.get("max_displacement_mm") is not None else "–",
+                    "**%.3f**" % r["score_N"] if r.get("score_N") is not None else "–",
+                    "%d of %d" % (r["rank"], r["of"]) if r.get("rank") else "–",
+                    "ok" if r["status"] == "ok" and r.get("score_N") is not None else r.get("score_note") or r.get("message") or r["status"]))
+            lines.append("\nRanks are as of the moment each pattern was scored; the live leaderboard is on the "
+                         "[Challenge page](https://%s.github.io/%s/challenge.html)." % (self.cfg.get("owner", ""), self.cfg.get("repo", "")))
+            rows_done = True
+        else:
+            rows_done = False
+            lines = ["**Batch finished: %d of %d patterns tested.**" % (len(ok), len(rows)), "",
+                     "| Index | Inserts | 20 N reached at | Result |", "|---:|---:|---:|---|"]
+        for r in ([] if rows_done else rows):
             lines.append("| %d | %d | %s | %s |" % (r["index"], r["pattern"].count("1"),
                          "%.1f mm" % r["max_displacement_mm"] if r.get("max_displacement_mm") is not None else "–",
                          "ok" if r["status"] == "ok" else r.get("message") or r["status"]))
@@ -650,30 +711,48 @@ class Agent:
         except ImportError:
             return path.read_bytes()
 
-    def score_challenge(self, n, issue, curve, files):
-        """Score a challenge entry against its target and add it to results/leaderboard.json."""
-        body = issue.get("body") or ""
-        tid = section(body, "target").split()[0].strip(".:,") if section(body, "target") else ""
-        method = section(body, "method")[:1500]
+    def challenge_targets(self):
         try:
-            targets = {t["id"]: t for t in json.loads(self.gh.file_text("docs/data/challenge.json"))["targets"]}
+            return {t["id"]: t for t in json.loads(self.gh.file_text("docs/data/challenge.json"))["targets"]}
         except (TypeError, ValueError, KeyError):
-            return "The challenge targets could not be read, so this entry was not scored; a lab member will check it."
+            return None
+
+    def add_to_leaderboard(self, n, user, tid, method, curve, files, pattern, curve_path, batch_index=None):
+        """Score one tested pattern against target tid and add it to results/leaderboard.json (in `files`).
+        Returns {"score_N", "stroke_error_mm", "rank", "of"} or {"score_note": reason}."""
+        targets = self.challenge_targets()
+        if targets is None:
+            return {"score_note": "targets could not be read; a lab member will score it"}
         if tid not in targets:
-            return "The target **%s** does not exist, so this entry was not scored." % (tid or "(none)")
+            return {"score_note": "target %s does not exist" % (tid or "(none)")}
         if curve["status"] != "ok":
-            return "The force did not reach 20 N, so this entry could not be scored against **%s**." % tid
+            return {"score_note": "the force did not reach 20 N"}
         score, dstroke = challenge_score(curve["dataData"], curve["max_displacement_mm"], targets[tid])
-        board = json.loads(self.gh.file_text("results/leaderboard.json") or "[]")
-        board = [e for e in board if e.get("issue") != n]
-        board.append({"issue": n, "user": issue["user"]["login"], "target": tid, "score_N": score,
+        key = (n, batch_index)
+        if "results/leaderboard.json" in files:
+            board = json.loads(files["results/leaderboard.json"])
+        else:
+            board = json.loads(self.gh.file_text("results/leaderboard.json") or "[]")
+        board = [e for e in board if (e.get("issue"), e.get("batch_index")) != key]
+        board.append({"issue": n, "batch_index": batch_index, "user": user, "target": tid, "score_N": score,
                       "stroke_error_mm": dstroke, "max_displacement_mm": round(curve["max_displacement_mm"], 3),
-                      "tested_at": now_iso(), "method": method, "pattern": (self.state.get("last_result") or {}).get("pattern")})
+                      "tested_at": now_iso(), "method": method, "pattern": pattern, "curve": curve_path})
         files["results/leaderboard.json"] = json.dumps(board, indent=1).encode()
-        better = [e for e in board if e["target"] == tid and e["score_N"] < score]
+        same = [e for e in board if e["target"] == tid]
+        return {"score_N": score, "stroke_error_mm": dstroke,
+                "rank": 1 + len([e for e in same if e["score_N"] < score]), "of": len(same)}
+
+    def score_challenge(self, n, issue, curve, files):
+        """Score a single challenge entry (challenge.yml) and return the comment line."""
+        body = issue.get("body") or ""
+        tid = section(body, "target").split()[0].strip(".:,").upper() if section(body, "target") else ""
+        r = self.add_to_leaderboard(n, issue["user"]["login"], tid, section(body, "method")[:1500], curve, files,
+                                    (self.state.get("last_result") or {}).get("pattern"), "results/%d/curve.json" % n)
+        if "score_note" in r:
+            return "This entry was not scored: %s." % r["score_note"]
         return ("**Challenge %s: score %.3f N** (RMS force difference of the 200-point curves; lower is better). "
                 "The displacement at 20 N differs by %+.1f mm from the target. Current rank on %s: %d of %d."
-                % (tid, score, dstroke, tid, len(better) + 1, len([e for e in board if e["target"] == tid])))
+                % (tid, r["score_N"], r["stroke_error_mm"], tid, r["rank"], r["of"]))
 
     def plot(self, curve, n):
         try:

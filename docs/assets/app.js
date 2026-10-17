@@ -879,6 +879,7 @@ ${line}
   // shared with extras.js (challenge, explorer, replay, rig-now panel)
   window.Rig = {
     CFG, RAW, DEMO, N_CELLS, codeIndex, el, thumb, drawLattice, ago, hasLabel, keyOf, demoPattern, demoCurve, fmt,
+    npyWrite, npyEncode, matrixOf,
     getPattern: () => bits.slice(),
     loadPattern(arr) { bits = arr.slice(); if (PAGE.editor) render(); },
     setChallenge(target, method) { challenge.target = target || null; challenge.method = method || ""; if (PAGE.editor) render(); }

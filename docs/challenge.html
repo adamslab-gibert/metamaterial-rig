@@ -28,7 +28,7 @@
         <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
       </div>
       <h1>Inverse-design challenge</h1>
-      <p class="lede">Ten force curves measured on this rig; their patterns are secret. Find a pattern that reproduces one, the rig tests it, and your score goes on the leaderboard.</p>
+      <p class="lede">Ten force curves measured on this rig; their patterns are secret. Find a pattern that reproduces one, in the editor or with your own code, the rig tests it, and your score goes on the leaderboard.</p>
     </div>
   </header>
 
@@ -40,6 +40,47 @@
       <div class="target-view" id="target-view"></div>
     </section>
 
+    <section class="wrap block" id="upload" aria-labelledby="upload-title">
+      <h2 id="upload-title">Work offline: download the targets, upload your entries</h2>
+      <p class="section-note">For your own algorithms: download all ten target curves, design patterns on your computer, then upload them as a zip. Each pattern is tested on the rig and scored against its target, just like an entry made in the editor.</p>
+      <div class="ch-grid">
+        <div class="ch-step">
+          <p class="kicker">Step 1</p>
+          <h3>Download the target curves</h3>
+          <p>A zip with the ten targets in the same format as the data set:</p>
+          <ul class="ch-files">
+            <li><code>targets_dataData.npy</code>: 10 × 200 force curves, stored as 2F/20&nbsp;N − 1</li>
+            <li><code>targets_maxData.npy</code>: displacement at 20&nbsp;N, mm</li>
+            <li><code>targets.csv</code>: target name, displacement at 20&nbsp;N, buckling events</li>
+            <li><code>targets_curves.csv</code>: the same curves as displacement (mm) and force (N)</li>
+            <li><code>README.txt</code>: formats, scoring and how to submit</li>
+          </ul>
+          <button type="button" class="submit" id="ch-download">Download the target curves (.zip)</button>
+          <p class="fineprint" id="ch-download-note"></p>
+        </div>
+        <div class="ch-step">
+          <p class="kicker">Step 2</p>
+          <h3>Upload your entries</h3>
+          <p>One <strong>.zip</strong> with two text files, <strong>at most one pattern per target</strong> (up to 10):</p>
+          <dl class="batch-files">
+            <dt><code>patterns</code> <span>(or patterns.txt)</span></dt>
+            <dd>One pattern per line: 105 digits of 0 and 1, bottom row first, 1 = insert.</dd>
+            <dt><code>targets</code> <span>(or targets.txt)</span></dt>
+            <dd>One target per line (T1 … T10), in the same order as <code>patterns</code>.</dd>
+          </dl>
+          <p><a href="assets/example_challenge.zip" download>Download an example zip</a> (entries for T1 and T2).</p>
+          <label class="cb-label" for="ch-method">Your method (required, at least 20 characters; shown on the leaderboard)</label>
+          <textarea id="ch-method" rows="3" maxlength="1500" placeholder="e.g. Forward CNN trained on the data set, then a genetic algorithm (200 patterns, 50 generations) minimising the curve error."></textarea>
+          <div class="drop" id="ch-drop">
+            <input type="file" id="ch-zip" accept=".zip,application/zip" class="visually-hidden">
+            <label for="ch-zip" class="drop-button">Choose a zip file</label>
+            <span class="drop-hint">or drop it here</span>
+          </div>
+          <p class="fineprint">The zip is checked here in your browser. Nothing is sent until you press submit.</p>
+        </div>
+      </div>
+      <div class="check" id="ch-check" aria-live="polite" hidden></div>
+    </section>
   </main>
 
   <footer class="site-foot">
@@ -48,6 +89,7 @@
     </div>
   </footer>
 
+  <script src="assets/jszip.min.js"></script>
   <script src="assets/island.js"></script>
   <script src="assets/app.js"></script>
   <script src="assets/extras.js"></script>

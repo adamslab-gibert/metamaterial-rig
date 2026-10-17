@@ -192,11 +192,12 @@
       box.appendChild(b);
     });
   }
+  const entryKey = e => `${e.issue}-${e.batch_index == null ? "" : e.batch_index}`;
   async function curveOfEntry(e) {
-    if (entryCurves.has(e.issue)) return entryCurves.get(e.issue);
+    if (entryCurves.has(entryKey(e))) return entryCurves.get(entryKey(e));
     const c = DEMO ? (() => { const t = targets.find(x => x.id === e.target); const d = t.dataData.map((v, k) => Math.min(1, v + Math.sin(k / 15 + e.issue) * e.score_N / 20)); return fromData(d, t.max_displacement_mm + e.stroke_error_mm); })()
-      : fromCurve(await getJSON(`${RAW}/results/${e.issue}/curve.json`));
-    entryCurves.set(e.issue, c); return c;
+      : fromCurve(await getJSON(`${RAW}/${e.curve || `results/${e.issue}/curve.json`}`));
+    entryCurves.set(entryKey(e), c); return c;
   }
   async function selectTarget(id, entry) {
     selected = id;
@@ -228,7 +229,7 @@
       const body = document.createElement("tbody");
       list.forEach((e, k) => {
         const tr = document.createElement("tr");
-        if (shown && e.issue === shown.issue) tr.className = "on";
+        if (shown && entryKey(e) === entryKey(shown)) tr.className = "on";
         const td = (t, cls, label) => { const c = h("td", cls, t); c.dataset.label = label; tr.appendChild(c); return c; };
         td(String(k + 1), "lb-rank", "Rank");
         const who = td("", "lb-who", "Entrant");
@@ -274,6 +275,174 @@
   const challengeTarget = () => _ct;
   const setCh = R.setChallenge;
   R.setChallenge = (t, m) => { _ct = t || null; setCh(t, m); };
+
+  // ---------------------------------------------------------------- challenge: download targets, upload entries
+  const MAX_ENTRIES = 10;
+  async function downloadTargets() {
+    const btn = $("ch-download"), note = $("ch-download-note");
+    if (!targets.length || !window.JSZip) { note.textContent = "The targets are not loaded yet; try again in a moment."; return; }
+    btn.disabled = true; btn.textContent = "Preparing…";
+    try {
+      const n = targets.length, zip = new JSZip();
+      zip.file("targets_dataData.npy", R.npyWrite("<f4", [n, 200], [R.npyEncode("<f4", targets.flatMap(t => t.dataData))]));
+      zip.file("targets_maxData.npy", R.npyWrite("<f8", [n], [R.npyEncode("<f8", targets.map(t => t.max_displacement_mm))]));
+      zip.file("targets.csv", "row,target,max_displacement_mm,buckling_events\n" +
+        targets.map((t, k) => `${k},${t.id},${t.max_displacement_mm},${t.buckling_events}`).join("\n") + "\n");
+      let long = "target,point,displacement_mm,force_N,dataData\n";
+      targets.forEach(t => t.dataData.forEach((v, k) => {
+        long += `${t.id},${k},${(t.max_displacement_mm * k / (t.dataData.length - 1)).toFixed(4)},${((v + 1) * FLIM / 2).toFixed(4)},${v}\n`;
+      }));
+      zip.file("targets_curves.csv", long);
+      const site = `https://${CFG.owner}.github.io/${CFG.repo}/`;
+      zip.file("README.txt", `INVERSE-DESIGN CHALLENGE: TARGET CURVES
+${"=".repeat(78)}
+${CFG.labName || ""}, Purdue University. Downloaded ${new Date().toISOString().slice(0, 10)} from ${site}challenge.html
+
+Ten force-displacement curves measured on the rig. Their patterns are secret and are
+not in the published data set. Find, for any target, a pattern of inserts whose
+measured curve matches it.
+
+FILES (row k of every file is target T(k+1))
+targets_dataData.npy  shape (${n}, 200), float32
+  Force at 200 equal steps of displacement from 0 to maxData, stored as
+  dataData = 2 * F / 20 N - 1, so F [N] = (dataData + 1) * 10. Same as dataData.npy
+  in the data set.
+targets_maxData.npy   shape (${n},), float64
+  Displacement at which the force reached 20 N [mm]. Point k is at maxData * k / 199.
+targets.csv           target name, displacement at 20 N, buckling events
+                      (force drops larger than 1.5 % of the peak force)
+targets_curves.csv    the same curves in long form: target, point, displacement [mm],
+                      force [N], dataData
+
+SCORE
+  RMS difference between the 200-point curves of your measured pattern and the target,
+  in N: sqrt(mean(((dataData_yours - dataData_target) * 10)^2)). Lower is better. The
+  difference in displacement at 20 N is reported alongside.
+
+SUBMITTING
+  In the editor: ${site}submit.html?challenge=T1 (one pattern).
+  As a zip: ${site}challenge.html#upload with two text files
+    patterns   one pattern per line: 105 digits of 0 and 1, bottom row first, 1 = insert
+    targets    one target per line (T1 ... T10), same order as patterns
+  At most one pattern per target per upload. You also describe your method.
+  The pattern format is explained in the README of the data set download.
+
+The published data set (${site}data.html) is the training data. CC BY 4.0.
+`);
+      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "challenge_targets.zip";
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      note.textContent = `Downloaded ${n} target curves.`;
+    } catch (e) { note.textContent = "The download could not be prepared (" + e.message + ")."; }
+    btn.disabled = false; btn.textContent = "Download the target curves (.zip)";
+  }
+
+  const linesOf = text => { const l = text.replace(/^﻿/, "").split(/\r?\n/); while (l.length && !l[l.length - 1].trim()) l.pop(); return l; };
+  async function checkEntriesZip(file) {
+    const errors = [];
+    if (!window.JSZip) return { errors: ["The checker could not load. Reload the page and try again."] };
+    let zip;
+    try { zip = await JSZip.loadAsync(file); }
+    catch (e) { return { errors: [`"${file.name}" could not be opened as a zip file.`] }; }
+    const entries = Object.values(zip.files).filter(f => !f.dir && !/(^|\/)(__MACOSX|\.)/.test(f.name));
+    const baseName = f => f.name.split("/").pop().replace(/\.(txt|csv|dat)$/i, "").toLowerCase();
+    const found = entries.map(f => f.name.split("/").pop());
+    const pick = want => {
+      const m = entries.filter(f => baseName(f) === want);
+      if (!m.length) { errors.push(`The zip has no file called "${want}". ` + (found.length ? `It contains: ${found.slice(0, 8).join(", ")}.` : "It is empty.")); return null; }
+      if (m.length > 1) { errors.push(`The zip has ${m.length} files called "${want}". Keep only one.`); return null; }
+      return m[0];
+    };
+    const pf = pick("patterns"), tf = pick("targets");
+    if (!pf || !tf) return { errors };
+    const pl = linesOf(await pf.async("string")), tl = linesOf(await tf.async("string"));
+    const ids = targets.map(t => t.id), codes = [], tids = [];
+    if (!pl.length) errors.push("The patterns file is empty.");
+    pl.forEach((raw, k) => {
+      const l = raw.replace(/[\s,]/g, ""), where = `patterns, line ${k + 1}`;
+      if (!l) errors.push(`${where} is empty.`);
+      else if (/[^01]/.test(l)) errors.push(`${where} contains characters other than 0 and 1.`);
+      else if (l.length !== R.N_CELLS) errors.push(`${where} has ${l.length} digits; a pattern needs exactly ${R.N_CELLS}.`);
+      codes.push(l);
+    });
+    const seen = new Map();
+    tl.forEach((raw, k) => {
+      const v = raw.trim().toUpperCase(), id = /^\d+$/.test(v) ? "T" + v : v, where = `targets, line ${k + 1}`;
+      if (!ids.includes(id)) errors.push(`${where} is "${raw.trim().slice(0, 12)}"; it must be one of ${ids[0]} … ${ids[ids.length - 1]}.`);
+      else if (seen.has(id)) errors.push(`${where}: ${id} is already on line ${seen.get(id) + 1}. Use at most one pattern per target.`);
+      else seen.set(id, k);
+      tids.push(id);
+    });
+    if (pl.length > MAX_ENTRIES) errors.push(`The patterns file has ${pl.length} lines; at most ${MAX_ENTRIES} (one per target).`);
+    if (pl.length && tl.length && pl.length !== tl.length) errors.push(`The patterns file has ${pl.length} lines but the targets file has ${tl.length}. They need one line each per entry.`);
+    if (errors.length) return { errors };
+    const bits = codes.map(c => [...c].map(Number));
+    return { errors: [], items: bits.map((b, k) => ({ target: tids[k], bits: b, island: window.RigIsland.classify(b) === true })), extra: entries.length - 2 };
+  }
+
+  function showEntriesCheck(file, res) {
+    const box = $("ch-check");
+    box.hidden = false; box.innerHTML = "";
+    const title = h("p", "check-title");
+    box.appendChild(title);
+    if (res.errors.length) {
+      box.dataset.state = "bad";
+      title.textContent = `${file.name}: the files need fixing`;
+      const ul = h("ul", "check-list");
+      res.errors.slice(0, 8).forEach(e => ul.appendChild(h("li", null, e)));
+      if (res.errors.length > 8) ul.appendChild(h("li", null, `… and ${res.errors.length - 8} more problems.`));
+      box.append(ul, h("p", "fineprint", "Fix these and upload the zip again. Nothing has been submitted."));
+      return;
+    }
+    const n = res.items.length;
+    box.dataset.state = "ok";
+    title.textContent = `Correct files: ${n} entr${n === 1 ? "y" : "ies"} for ${res.items.map(i => i.target).join(", ")}`;
+    if (res.extra > 0) box.appendChild(h("p", "fineprint", `${res.extra} other file${res.extra === 1 ? " in the zip was" : "s in the zip were"} ignored.`));
+    const grid = h("div", "ch-entries");
+    res.items.forEach(it => {
+      const t = targets.find(x => x.id === it.target);
+      const card = h("figure", "ch-entry");
+      const spark = forceChart([{ ...fromData(t.dataData, t.max_displacement_mm), cls: "target" }], { w: 150, h: 70, xmax: 40, label: `Target ${t.id}` });
+      spark.svg.classList.add("spark");
+      const cap = h("figcaption", null);
+      cap.append(h("strong", null, it.target), h("span", null, `${it.bits.reduce((a, b) => a + b, 0)} inserts · ${it.island ? "island algorithm" : "not island"}`));
+      card.append(R.thumb(it.bits, "ch-thumb"), spark.svg, cap);
+      grid.appendChild(card);
+    });
+    box.appendChild(grid);
+    const method = $("ch-method").value.trim();
+    const sub = h("a", "submit");
+    const update = () => {
+      const m = $("ch-method").value.trim();
+      const okM = m.replace(/\s+/g, " ").length >= 20;
+      const body = res.items.map(i => `${i.target} ${R.keyOf(i.bits)}`).join("\n");
+      sub.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/new?template=challenge_batch.yml&title=${encodeURIComponent(`Challenge entries: ${res.items.map(i => i.target).join(", ")}`)}` +
+        `&entries=${encodeURIComponent(body)}&method=${encodeURIComponent(m.slice(0, 1500))}`;
+      if (okM) sub.removeAttribute("aria-disabled"); else sub.setAttribute("aria-disabled", "true");
+      sub.textContent = okM ? `Submit ${n} entr${n === 1 ? "y" : "ies"} to the challenge` : "Describe your method above (at least 20 characters) to submit";
+    };
+    sub.target = "_blank"; sub.rel = "noopener";
+    $("ch-method").oninput = update;
+    update();
+    box.append(sub, h("p", "fineprint", "Submitting opens one pre-filled request on GitHub (free account needed). The patterns are tested one after another; each score is posted on the request and added to the leaderboard."));
+    if (!method) $("ch-method").focus();
+  }
+
+  function setupUpload() {
+    if (!$("ch-zip")) return;
+    $("ch-download").onclick = downloadTargets;
+    const input = $("ch-zip"), drop = $("ch-drop");
+    const handle = async file => {
+      if (!file) return;
+      if (!targets.length) { try { targets = (await getJSON("data/challenge.json")).targets; } catch (e) { /* shown below */ } }
+      const box = $("ch-check"); box.hidden = false; box.dataset.state = "busy"; box.textContent = `Checking ${file.name} …`;
+      showEntriesCheck(file, await checkEntriesZip(file));
+    };
+    input.addEventListener("change", () => { handle(input.files[0]); input.value = ""; });
+    ["dragenter", "dragover"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add("over"); }));
+    ["dragleave", "drop"].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove("over"); }));
+    drop.addEventListener("drop", e => handle(e.dataTransfer.files[0]));
+  }
 
   // ---------------------------------------------------------------- data-set explorer
   const AX = [
@@ -417,5 +586,6 @@
 
   window.RigExtras = { onStatus, openReplay, onPattern: null };
   if ($("targets") || $("challenge-banner")) setupChallenge();
+  setupUpload();
   setupExplorer();
 })();

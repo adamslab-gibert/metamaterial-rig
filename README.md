@@ -79,11 +79,13 @@ Visitors never control the hardware. They can only add patterns to a queue; the 
 | `docs/assets/style.css` | Look of the website. |
 | `docs/assets/jszip.min.js` | Library that reads uploaded zips and builds the data-set download in the browser (JSZip 3.10.1, MIT). |
 | `docs/assets/example_batch.zip` | Example upload (5 patterns) offered on the Submit page. |
+| `docs/assets/example_challenge.zip` | Example challenge upload (entries for T1 and T2) offered on the Challenge page. |
 | `docs/data/` | **The published data set** and files derived from it (see [section 6](#6-results-and-the-data-set)). Made by `lab/build_web_dataset.py`. |
 | **`.github/`** | **Request forms and the checker.** |
 | `.github/ISSUE_TEMPLATE/pattern.yml` | Form for one pattern. |
 | `.github/ISSUE_TEMPLATE/batch.yml` | Form for a batch (up to 100 patterns). |
 | `.github/ISSUE_TEMPLATE/challenge.yml` | Form for a challenge entry (target, pattern, method). |
+| `.github/ISSUE_TEMPLATE/challenge_batch.yml` | Form for challenge entries uploaded as a zip (up to 10, one per target, plus a method). |
 | `.github/ISSUE_TEMPLATE/config.yml` | Adds a link to the website on GitHub's "new issue" page. |
 | `.github/workflows/validate-pattern.yml` | Runs the checker on every new or edited request. Settings: `MAX_OPEN_PER_USER`, `REQUIRE_APPROVAL`. |
 | `.github/scripts/validate.js` | The checker itself. |
@@ -122,6 +124,7 @@ Four pages share a top bar with the page links and a small rig-status badge.
 
 **Challenge** (`challenge.html`)
 - The 10 target curves, a chart of the selected target with the best entry, and the leaderboard: rank, entrant, score, displacement difference, method, date. **Design a pattern for Tn** opens the Submit page in challenge mode.
+- *Work offline*: **Download the target curves** gives a zip with `targets_dataData.npy` (10 × 200, as in the data set), `targets_maxData.npy`, `targets.csv`, `targets_curves.csv` (displacement and force) and a README. Entries made with your own code are uploaded as a zip with a `patterns` file and a `targets` file (one target per line, T1–T10, same order; at most one pattern per target). The page checks the zip, shows each entry next to its target, requires a method description and opens one GitHub request (`challenge_batch.yml`).
 
 **Website settings** (`docs/assets/config.js`)
 
@@ -145,6 +148,7 @@ Every submission is a GitHub issue made from one of three forms. The label decid
 | `pattern.yml` | `pattern-request` | One 105-digit pattern. |
 | `batch.yml` | `pattern-request`, `batch-request` | Up to 100 patterns, one per line, in index order (as 105 digits or, as the website writes them, 27 hex digits each so 100 fit in the link). |
 | `challenge.yml` | `pattern-request`, `challenge` | A target (T1–T10), one pattern and a method description (at least 20 characters). |
+| `challenge_batch.yml` | `pattern-request`, `batch-request`, `challenge` | Up to 10 lines "T3 <pattern>" (one pattern per target) and one method description. Made by the zip upload on the Challenge page. |
 
 All forms have a required data-sharing box (results are published under CC BY 4.0).
 
@@ -291,7 +295,8 @@ Current contents: **22,166 runs**, each pattern once. 19,654 runs follow the isl
 ## 7. The inverse-design challenge
 
 - **Targets.** 10 measured runs, each with at least two buckling events (force drops of more than 1.5 % of the peak). They are spread over the displacement at 20 N, from 17.8 to 37.6 mm, and 2 of them do not follow the island algorithm. The website shows only their curves (`docs/data/challenge.json`). Their patterns are kept in the lab (`challenge_targets_SECRET.json`) and left out of the data set.
-- **Entry.** One pattern per request, with a method description (`challenge.yml`). The Submit page fills in the form in challenge mode.
+- **Entry.** Either one pattern made in the editor (`challenge.yml`; the Submit page fills in the form in challenge mode), or up to 10 patterns uploaded as a zip on the Challenge page, at most one per target (`challenge_batch.yml`). Both need a method description. Uploaded entries run like a batch, one after another; each is scored against its own target, and one summary table with the scores is posted when all are done.
+- **Offline work.** The Challenge page offers the target curves as a zip (NumPy and CSV) for use with your own code.
 - **Score.** The paper's 200-point error, in N: the RMS difference between the submitted pattern's 200-point curve and the target's (F = (dataData + 1) × 10 N, at the same fraction of each run's displacement at 20 N). Lower is better. The difference in displacement at 20 N is reported alongside.
 - **Leaderboard.** After the test, the agent writes the score to `results/leaderboard.json` and comments the score and rank on the request. The Challenge page ranks the entries for each target.
 
@@ -374,6 +379,8 @@ The rig program, the lab's pattern generator and the website all use this order.
 **Force curves.** `dataData` has 200 points at equal steps of displacement from 0 to `maxData`:
 - force: F [N] = (dataData + 1) × 10;
 - displacement of point k: maxData × k / 199 [mm].
+
+**Challenge zip.** One `.zip` with `patterns` (one 105-digit pattern per line) and `targets` (one target per line, T1–T10 or 1–10, same order); at most one pattern per target, up to 10. See `docs/assets/example_challenge.zip`.
 
 **Batch zip.** One `.zip` with two text files (`.txt` or no extension, in any folder of the zip), for up to 100 patterns:
 - `patterns`: one 105-digit pattern per line.

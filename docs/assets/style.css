@@ -483,3 +483,24 @@ main > .first, main > section.first { margin-top: 0; padding-top: 0; border-top:
 .go-card .kicker { margin: 0; }
 
 .challenge-banner[hidden], .check[hidden] { display: none; }
+
+/* ---------- challenge: download targets / upload entries ---------- */
+.ch-grid { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px 32px; max-width: 1060px; align-items: start; }
+@media (min-width: 860px) { .ch-grid { grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr); } }
+.ch-step { background: var(--sheet); border-radius: 6px; padding: 18px 20px; }
+.ch-step h3 { margin: 0 0 .4rem; font-size: 1.15rem; }
+.ch-step p { margin: .4rem 0; }
+.ch-step .kicker { margin: 0; }
+.ch-files { margin: .4rem 0 1rem; padding-left: 1.2rem; font-size: .93rem; color: var(--ink-2); }
+.ch-files li { margin-bottom: .2rem; }
+.ch-files code, .ch-step code { font: 500 .9em ui-monospace, Menlo, Consolas, monospace; color: var(--ink); background: var(--bench); border: 1px solid var(--rule); border-radius: 3px; padding: 0 .3em; }
+.ch-step .submit { display: inline-block; border: 0; cursor: pointer; }
+.ch-step textarea { font: 400 .92rem/1.4 "Archivo", system-ui, sans-serif; letter-spacing: 0; margin-bottom: 12px; }
+.ch-step .drop { min-height: 96px; justify-content: center; background: var(--bench); }
+.ch-entries { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin: 8px 0 18px; }
+.ch-entry { margin: 0; display: grid; grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto; gap: 4px 10px; align-items: center; background: var(--bench); border-radius: 4px; padding: 8px; }
+.ch-entry .ch-thumb { width: 44px; height: auto; margin: 0; grid-row: span 2; }
+.ch-entry .chart { width: 100%; }
+.ch-entry figcaption { display: grid; font-size: .82rem; color: var(--ink-2); }
+.ch-entry figcaption strong { color: var(--ink); font-size: .95rem; }
+#ch-check .submit { display: inline-block; }

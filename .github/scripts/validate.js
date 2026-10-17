@@ -57,6 +57,28 @@ function parseBatch(body) {
   return { ok: true, codes };
 }
 
+/** Challenge entries uploaded as a zip: lines "T3 <pattern>" under the Entries heading (pattern as 105 digits
+    or 27 hex digits), at most one pattern per target. Same rules as lab/agent.py. */
+const MAX_CHALLENGE_ENTRIES = 10;
+function parseChallengeEntries(body) {
+  const lines = section(body, "entries").split(/\r?\n/).map(l => l.trim()).filter(l => l && !l.startsWith("```"));
+  if (!lines.length) return { ok: false, why: "The Entries field is empty. Upload the zip on the Challenge page and use its submit button." };
+  if (lines.length > MAX_CHALLENGE_ENTRIES) return { ok: false, why: `The request has ${lines.length} entries; at most ${MAX_CHALLENGE_ENTRIES} (one per target).` };
+  const entries = [], seen = new Set();
+  for (let k = 0; k < lines.length; k++) {
+    const parts = lines[k].replace(/,/g, " ").split(/\s+/);
+    if (parts.length !== 2) return { ok: false, why: `Line ${k + 1} should be a target and a pattern, e.g. "T3 0101…".` };
+    const target = parts[0].toUpperCase(), p = parts[1];
+    let code = null;
+    if (/^[01]{105}$/.test(p)) code = p;
+    else if (/^[01][0-9a-fA-F]{26}$/.test(p)) code = BigInt("0x" + p).toString(2).padStart(N_CELLS, "0");
+    if (!code) return { ok: false, why: `Line ${k + 1}: the pattern is not valid (105 digits of 0 and 1).` };
+    if (seen.has(target)) return { ok: false, why: `Target ${target} appears more than once; enter at most one pattern per target.` };
+    seen.add(target); entries.push({ target, code });
+  }
+  return { ok: true, entries, codes: entries.map(e => e.code) };
+}
+
 /** Text under an issue-form heading starting with `name`. */
 function section(body, name) {
   const sec = (body || "").split(/^###\s+/m).find(s => s.toLowerCase().startsWith(name.toLowerCase()));
@@ -133,16 +155,23 @@ async function run({ github, context, core }) {
   const fail = async why => {
     await setLabels(github, owner, repo, issue, ["invalid"], ["queued", "awaiting-approval"]);
     await upsertComment(github, owner, repo, issue.number,
-      `**This ${labels.has("batch-request") ? "batch" : "pattern"} can't be queued yet.** ${why}\n\nEdit the request to fix it (the ⋯ menu → Edit); it is checked again automatically.`);
+      `**This ${labels.has("batch-request") && labels.has("challenge") ? "set of challenge entries" : labels.has("batch-request") ? "batch" : "pattern"} can't be queued yet.** ${why}\n\nEdit the request to fix it (the ⋯ menu → Edit); it is checked again automatically.`);
   };
 
   const isBatch = labels.has("batch-request");
-  const parsed = isBatch ? parseBatch(issue.body) : parsePattern(issue.body);
+  const isChallengeBatch = isBatch && labels.has("challenge");
+  const parsed = isChallengeBatch ? parseChallengeEntries(issue.body) : isBatch ? parseBatch(issue.body) : parsePattern(issue.body);
   if (!parsed.ok) return fail(parsed.why);
   if (!consentGiven(issue.body)) return fail("Tick the data-sharing box so the results can be published.");
   const isChallenge = labels.has("challenge");
   let target = "";
-  if (isChallenge) {
+  if (isChallengeBatch) {
+    const ids = challengeTargets();
+    const bad = ids ? parsed.entries.map(e => e.target).filter(t => !ids.includes(t)) : [];
+    if (bad.length) return fail(`There is no target ${bad.join(", ")}. The targets are ${ids.join(", ")}.`);
+    if (section(issue.body, "method").replace(/\s+/g, " ").length < 20)
+      return fail("Describe your method in the Method field (at least 20 characters). It is shown on the leaderboard.");
+  } else if (isChallenge) {
     target = (section(issue.body, "target").match(/T\d+/i) || [""])[0].toUpperCase();
     const ids = challengeTargets();
     if (!target) return fail("Enter the challenge target (T1 to T10) in the Target field.");
@@ -163,6 +192,15 @@ async function run({ github, context, core }) {
     ? "A lab member approves requests before they join the queue; you'll see the label change to **queued**."
     : `It is in the queue with ${ahead} request${ahead === 1 ? "" : "s"} ahead of it. It runs automatically when the machine is online.`;
   await setLabels(github, owner, repo, issue, [needApproval ? "awaiting-approval" : "queued"], ["invalid"]);
+  if (isChallengeBatch) {
+    const n = parsed.entries.length;
+    const list = parsed.entries.map(e => `${e.target.padEnd(4)} ${e.code}  ${e.code.split("").filter(b => b === "1").length} inserts`).join("\n");
+    await upsertComment(github, owner, repo, issue.number,
+      `**Challenge entries accepted: ${n} pattern${n === 1 ? "" : "s"} for ${parsed.entries.map(e => e.target).join(", ")}.** ${where} ` +
+      "They are tested one after another; each is scored against its target and added to the leaderboard. A summary with the scores is posted here when all are done." +
+      `\n\n<details><summary>The ${n} entries (target, 105-digit code, inserts)</summary>\n\n` + "```\n" + list + "\n```\n</details>");
+    return;
+  }
   if (isBatch) {
     const n = parsed.codes.length;
     const list = parsed.codes.map((c, k) => `${String(k).padStart(3)}  ${c}  ${c.split("").filter(b => b === "1").length} inserts`).join("\n");
@@ -180,4 +218,4 @@ async function run({ github, context, core }) {
     "■ insert, □ empty, top row first. The results will be posted here when the test is done.");
 }
 
-module.exports = { run, section, challengeTargets, parsePattern, parseBatch, consentGiven, render, LABELS, MAX_BATCH };
+module.exports = { run, parseChallengeEntries, section, challengeTargets, parsePattern, parseBatch, consentGiven, render, LABELS, MAX_BATCH };
