@@ -332,6 +332,8 @@ textarea:focus-visible { outline-offset: 0; }
 .steps li::marker { font-weight: 760; font-variation-settings: "wdth" 70; }
 
 .site-foot { margin-top: 48px; padding: 24px 0 40px; border-top: 1px solid var(--rule); color: var(--ink-2); font-size: .95rem; }
+.site-foot p { margin: 0 0 6px; }
+.foot-legal { font-size: .88rem; }
 
 /* ---------- rig now: current / last pattern ---------- */
 .rig-side { display: grid; gap: 16px; align-content: start; }

@@ -1,0 +1,18 @@
+Copyright (c) 2026 ADAMS (Advanced Dynamics and MechanicS Lab), Purdue University.
+All rights reserved.
+
+WEBSITE AND CODE
+The website (docs/), the lab software (lab/), the request forms and checker
+(.github/) and the control files (control/) in this repository are the work of
+the ADAMS Lab. You may view the website, submit patterns, enter the challenge
+and read this repository. You may not copy, modify, redistribute or reuse the
+code, the page designs or the text, in whole or in part, or use them to run
+another website or test rig, without written permission from the ADAMS Lab,
+Purdue University. To ask for permission, contact the lab through the website.
+
+MEASURED DATA
+The measured data set (docs/data/ and the test results in results/) is
+published separately under the Creative Commons Attribution 4.0 International
+licence (CC BY 4.0, https://creativecommons.org/licenses/by/4.0/). You may use
+and share it for any purpose if you credit ADAMS (Advanced Dynamics and
+MechanicS Lab), Purdue University, and link to this repository.
