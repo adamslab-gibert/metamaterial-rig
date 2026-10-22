@@ -1,0 +1,10 @@
+{
+ "v": 1,
+ "kdf": "PBKDF2-SHA256",
+ "iterations": 600000,
+ "cipher": "AES-GCM-256",
+ "salt": "s3TYS+ee2vheBsGDgi+z6A==",
+ "iv": "RMognbcPoZrNYkaD",
+ "data": "2vP1SkhSCrIFfmxfGYfYtcGsIDUJ7pQiRg4ynW53G/LT6eui0hixUfet6R020JdLFsZBdEwyZAkZtGk6pRMMrcOP8VawLXpeBd2z+uED+4o0i0/4ZYxq4LJNJJpIkya7FUioUjsjEjlNE058RQ==",
+ "note": "Admin login for the rig website. Encrypted with the admin password, which is not stored anywhere."
+}

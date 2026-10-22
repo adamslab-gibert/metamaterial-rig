@@ -1,0 +1,15 @@
+{
+  "owner": "adamslab-gibert",
+  "repo": "metamaterial-rig",
+  "branch": "main",
+  "token_env": "RIG_GITHUB_TOKEN",
+  "queue_dir": "web_queue",
+  "poll_seconds": 20,
+  "heartbeat_seconds": 120,
+  "rig_stale_seconds": 10,
+  "max_frames": 40,
+  "frame_width": 720,
+  "firebase_url": "",
+  "firebase_key_file": "",
+  "live_seconds": 5
+}

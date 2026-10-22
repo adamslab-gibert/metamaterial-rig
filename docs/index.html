@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Metamaterial Test Rig</title>
+  <meta name="description" content="A robotic test rig for a programmable silicone metamaterial: watch it run live, submit patterns, explore the data and enter the inverse-design challenge.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css?v=202610222047">
+  <script src="assets/config.js?v=202610222047"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head big">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">ADAMS (Advanced Dynamics and MechanicS Lab)</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html" aria-current="page">Rig</a>
+          <a href="submit.html">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html">Challenge</a>
+          <a href="admin.html" class="nav-admin">Admin</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Programmable Metamaterial Test Rig</h1>
+      <p class="lede lede-wide">Meet <strong>Sir Squish-a-Lot</strong>: a metamaterial that gets its properties from its structure rather than from the material alone. This green knight is made of soft silicone rubber with 105 diamond-shaped unit cells. Any unit cell can receive a rigid insert, which stiffens it locally and so changes how the whole structure responds, and different insert patterns produce different responses. Try it yourself: design a pattern, and the rig places the inserts, compresses the structure and measures how it deforms. You can watch it happen live.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="wrap rig" aria-labelledby="rig-title">
+      <h2 id="rig-title">Rig Status</h2>
+      <div class="rig-grid">
+        <div class="rig-side">
+          <div class="status" id="status" data-state="loading" aria-live="polite">
+            <span class="lamp" aria-hidden="true"></span>
+            <div>
+              <p class="status-title" id="status-title">Checking the machine…</p>
+              <p class="status-detail" id="status-detail"></p>
+            </div>
+          </div>
+          <div class="now" id="now" aria-live="polite">
+            <p class="now-label" id="now-label">On the rig</p>
+            <div class="now-body">
+              <div class="now-pattern" id="now-pattern"></div>
+              <div class="now-curve" id="now-curve"><p class="empty-note">Nothing tested yet.</p></div>
+            </div>
+            <p class="now-note" id="now-note"></p>
+          </div>
+        </div>
+        <div class="live" id="live"></div>
+      </div>
+    </section>
+
+    <section class="wrap block" aria-labelledby="queue-title">
+      <div class="queue-head">
+        <h2 id="queue-title">Queue</h2>
+        <p class="queue-sum" id="queue-sum"></p>
+      </div>
+      <p class="section-note note-wide">Submit your patterns to the queue. They are tested one at a time, on a first-come, first-served basis, whenever the rig is online. <strong>Remember your request number:</strong> you'll need it to find your request in the queue and to download its results. When your request is finished, you can download its results from the <strong>Data</strong> column below. New results are also added to the full <a href="data.html">data set</a>.</p>
+      <div class="queue-wrap">
+        <table class="queue" id="queue">
+          <thead><tr><th scope="col">Place</th><th scope="col">Request</th><th scope="col">Patterns</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Data</th></tr></thead>
+          <tbody id="queue-body"><tr><td colspan="6" class="empty-note">Loading the queue…</td></tr></tbody>
+        </table>
+      </div>
+      <form class="find-data" id="find-data">
+        <label for="find-n">Data of an older request: request number</label>
+        <input id="find-n" type="number" min="1" inputmode="numeric" required>
+        <button type="submit" class="replay-btn data-btn">Download</button>
+      </form>
+    </section>
+
+    <section class="wrap block" aria-labelledby="results-title">
+      <h2 id="results-title">Recent results</h2>
+      <div class="results" id="results"><p class="empty-note">Loading…</p></div>
+      <p class="fineprint">Every result is also saved in <a id="results-folder" href="#">results/</a> on GitHub with raw readings, the 200-point curve and photos, and is included in the <a href="data.html">data set download</a>.</p>
+    </section>
+
+    <section class="wrap block go" aria-labelledby="go-title">
+      <h2 id="go-title">What you can do here</h2>
+      <div class="go-grid">
+        <a class="go-card" href="submit.html"><span class="kicker">Submit</span><strong>Test your own patterns</strong><span>Design one pattern on the lattice, or upload a zip with up to 100.</span></a>
+        <a class="go-card" href="data.html"><span class="kicker">Data</span><strong>Explore and download the data set</strong><span>Every measured run: patterns, force curves and displacements.</span></a>
+        <a class="go-card" href="challenge.html"><span class="kicker">Challenge</span><strong>Match a secret target curve</strong><span>Inverse-design benchmark with a public leaderboard.</span></a>
+      </div>
+    </section>
+    <section class="wrap block" aria-labelledby="how-title">
+      <h2 id="how-title">How a request runs</h2>
+      <ol class="steps">
+        <li><strong>You submit.</strong> One pattern from the editor, or a zip of up to 100. It opens as a request on GitHub.</li>
+        <li><strong>It is checked.</strong> A bot checks the patterns and adds the request to the queue, or explains what to fix.</li>
+        <li><strong>The rig picks it up.</strong> When the machine is online and idle, it takes the oldest request.</li>
+        <li><strong>The robot builds and tests each pattern.</strong> It places the inserts, compresses the specimen to 20 N and photographs it.</li>
+        <li><strong>Results are posted.</strong> Curves and photos appear on your request, and the runs are added to the data set.</li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">ADAMS (Advanced Dynamics and MechanicS Lab)</span>. Source and results: <a id="repo-link" href="#">GitHub repository</a>. Measured data are published under CC BY 4.0.</p>
+    </div>
+  </footer>
+
+  <dialog class="replay" id="replay" aria-labelledby="replay-title">
+    <div class="replay-head"><h2 id="replay-title">Replay</h2><button type="button" class="replay-close" id="replay-close" aria-label="Close">×</button></div>
+    <div class="replay-body" id="replay-body"></div>
+  </dialog>
+
+  <script src="assets/jszip.min.js?v=202610222047"></script>
+  <script src="assets/island.js?v=202610222047"></script>
+  <script src="assets/admin-gate.js?v=202610222047"></script>
+  <script src="assets/app.js?v=202610222047"></script>
+  <script src="assets/extras.js?v=202610222047"></script>
+</body>
+</html>

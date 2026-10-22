@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Rig page
+    url: https://adamslab-gibert.github.io/metamaterial-rig/
+    about: Design a pattern, see the machine status and the queue.

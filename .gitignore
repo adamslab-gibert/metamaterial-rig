@@ -1,0 +1,10 @@
+lab/agent_config.json
+lab/agent.log
+lab/__pycache__/
+web_queue/
+web_queue_test/
+*SECRET*
+*firebase*key*.json
+*firebase-adminsdk*.json
+firebase_key.json
+*-firebase-adminsdk-*.json

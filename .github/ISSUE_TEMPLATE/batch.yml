@@ -1,0 +1,37 @@
+name: Batch of patterns
+description: Queue up to 100 patterns uploaded as a zip on the rig page
+title: "Batch request"
+labels: ["pattern-request", "batch-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Upload your zip (a `patterns` file and an `index` file) on the [Submit page](https://adamslab-gibert.github.io/metamaterial-rig/submit.html). The page checks it and fills in the patterns below. A bot checks them again within a minute and adds the batch to the queue.
+  - type: input
+    id: name
+    attributes:
+      label: Your name
+      description: Shown with your request and its results, so the lab and others can see whose patterns are being tested.
+      placeholder: "e.g. Jane Smith (Purdue ME)"
+    validations:
+      required: true
+  - type: textarea
+    id: patterns
+    attributes:
+      label: Patterns (one per line, in index order)
+      description: Filled in by the rig page. Each line is one pattern, as 105 digits or as 27 hex digits. At most 100.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    id: purpose
+    attributes:
+      label: What are the patterns for? (optional)
+      description: A sentence helps us see how the rig is used.
+  - type: checkboxes
+    id: consent
+    attributes:
+      label: Data sharing
+      options:
+        - label: I agree that the measured data, photos and this request are published openly under CC BY 4.0.
+          required: true
