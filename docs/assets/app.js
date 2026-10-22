@@ -422,6 +422,7 @@
       if (touchesBeat && LIVE.beats++ > 0) LIVE.lastBeatAt = Date.now();   // the first value is the stored one: not proof of life
       LIVE.ok = true; LIVE.failures = 0;
       liveTick();
+      if (!touchesBeat || (m.path === "/" && m.data && "state" in m.data)) liveChanged(LIVE.data.state);
     };
     es.addEventListener("put", onData(false));
     es.addEventListener("patch", onData(true));
@@ -1198,20 +1199,36 @@ ${line}
   }
 
   // ---------------------------------------------------------------- refresh loop
-  let refreshCount = 0;
-  async function refresh() {
-    if (refreshCount % 5 === 0 && PAGE.dataset)
+  // The queue and the results come from GitHub, which allows one browser only 60 requests an hour, so the
+  // page asks every 90 s and, in between, only when something has happened: the live status (Firebase)
+  // reports a request starting or finishing, or the visitor comes back to the tab (e.g. after submitting).
+  let refreshCount = 0, refreshing = false, lastRefreshAt = 0, lastResultsAt = 0, wantResults = false, retries = 0;
+  function refreshSoon(withResults) {
+    if (withResults) wantResults = true;
+    const wait = Math.max(0, 15000 - (Date.now() - lastRefreshAt));      // at most one extra refresh per 15 s
+    clearTimeout(refreshSoon.t); refreshSoon.t = setTimeout(() => refresh(true), wait);
+  }
+  async function refresh(extra) {
+    if (refreshing) return;
+    refreshing = true; lastRefreshAt = Date.now();
+    const resultsNow = !extra ? refreshCount % 5 === 0 : (wantResults && Date.now() - lastResultsAt > 15000);
+    if (!extra && refreshCount % 5 === 0 && PAGE.dataset)
       loadDataset().then(showDataset).catch(() => { if (base) showDataset(); });
     try {
       const open = DEMO ? demoIssues().open : (await gh("/issues?state=open&per_page=100")).filter(i => !i.pull_request);
       showQueue(showStatus(open));
-      if (refreshCount % 5 === 0 && PAGE.results) {
+      if (resultsNow && PAGE.results) {
+        wantResults = false; lastResultsAt = Date.now();
         // listed without GitHub's label filter (it sometimes returns nothing) and filtered here
         const done = DEMO ? demoIssues().done : (await gh("/issues?state=closed&sort=updated&direction=desc&per_page=50"))
           .filter(i => !i.pull_request && hasLabel(i, "done")).slice(0, 6);
         lastDone = done;
         showQueue(lastQueued);
         showResults(done);
+        // the live status can report a finished request a few seconds before GitHub has it: look again shortly
+        const want = LIVE.data.state && LIVE.data.state.last && LIVE.data.state.last.issue;
+        if (extra && want && !String(want).startsWith("auto-") && !done.some(i => i.number === +want) && (retries++ < 3)) setTimeout(() => refreshSoon(true), 30000);
+        else if (!extra) retries = 0;
       }
     } catch (e) {
       queueMessage("The queue could not be loaded right now. The page tries again automatically.");
@@ -1223,8 +1240,26 @@ ${line}
       else if (e.message === "missing") setStatus("unknown", "Not set up yet", `The page can't find the repository ${CFG.owner}/${CFG.repo}. Check owner and repo in assets/config.js.`);
       else setStatus("unknown", "Status unavailable", "The page could not reach GitHub. Check your connection. The page tries again automatically.");
     }
-    refreshCount++;
+    if (!extra) refreshCount++;
+    refreshing = false;
   }
+  // coming back to the tab (after submitting on GitHub, say) → look again if the last look is older than 20 s
+  document.addEventListener("visibilitychange", () => { if (!document.hidden && Date.now() - lastRefreshAt > 20000) refreshSoon(true); });
+  // the live status says a request started or finished, or the queue length changed → look again now.
+  // Automatic patterns (job "auto-N") don't touch the queue table, so they cause no extra requests.
+  let liveSig = null;
+  function liveChanged(st) {
+    if (!st) return;
+    const req = v => v != null && !String(v).startsWith("auto-");
+    const sig = [st.queue, req(st.job) ? st.job : "", st.last && req(st.last.issue) ? st.last.issue + "/" + (st.last.batch_index ?? "") : ""].join("|");
+    if (liveSig === null) { liveSig = sig; return; }
+    if (sig === liveSig) return;
+    const [, , lastBefore] = liveSig.split("|"), [, , lastNow] = sig.split("|");
+    liveSig = sig;
+    refreshSoon(lastNow !== lastBefore);
+    liveListeners.forEach(fn => { try { fn(); } catch (e) { /* ignore */ } });
+  }
+  const liveListeners = [];
 
   // the live camera (YouTube) in an element with class "live"; also used by the Admin page after login
   function embedLive(live) {
@@ -1273,6 +1308,7 @@ ${line}
   window.Rig.nameFromBody = nameFromBody;
   window.Rig.PAGE = PAGE;
   window.Rig.embedLive = embedLive;
+  window.Rig.onLiveChange = fn => liveListeners.push(fn);   // the Admin page reloads its lists on the same signal
   let addsOnce = null;   // newer runs (queue and automatic), the same list and order as in the download
   window.Rig.datasetAdditions = () => addsOnce || (addsOnce = loadDataset().then(() => additions).catch(() => []));
   setupStatic();
@@ -1285,6 +1321,6 @@ ${line}
   }
   if (PAGE.batch) setupBatch();
   // first refresh once every script on the page (extras.js) has loaded
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", refresh); else setTimeout(refresh, 0);
-  setInterval(refresh, (CFG.refreshSeconds || 90) * 1000);
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", () => refresh()); else setTimeout(() => refresh(), 0);
+  setInterval(() => refresh(), (CFG.refreshSeconds || 90) * 1000);
 })();

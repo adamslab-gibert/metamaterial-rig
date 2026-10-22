@@ -470,4 +470,11 @@
   wire();
   start();
   setInterval(load, 60000);
+  // a request started or finished (live status) → reload the lists now, at most once per 15 s
+  let liveLoadAt = 0;
+  if (R && R.onLiveChange) R.onLiveChange(() => {
+    if (!AUTH.token() || $("admin-app").hidden) return;
+    const wait = Math.max(0, 15000 - (Date.now() - liveLoadAt)); liveLoadAt = Date.now() + wait;
+    setTimeout(load, wait);
+  });
 })();
