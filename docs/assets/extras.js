@@ -264,7 +264,6 @@
       spark.svg.classList.add("spark");
       const best = ranked(t.id)[0];
       b.append(h("span", "t-id", t.id), spark.svg,
-        h("span", "t-sub", `20 N at ${t.max_displacement_mm.toFixed(1)} mm · ${t.inserts} inserts`),
         h("span", "t-best", best ? `Best ${best.score_N.toFixed(3)} N` : "No entries yet"));
       b.onclick = () => selectTarget(t.id);
       box.appendChild(b);
@@ -314,7 +313,7 @@
     left.append(legend, note);
 
     right.append(h("h3", null, `Target ${id}`),
-      h("p", null, `Displacement at 20 N: ${t.max_displacement_mm.toFixed(1)} mm. ${t.inserts} inserts. ${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
+      h("p", null, `${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
     const go = h("button", "submit", `Design a pattern for ${id}`); go.type = "button";
     go.onclick = () => { location.href = R.pageUrl("submit.html", { challenge: id }) + "#single"; };
     right.append(go, h("p", "fineprint", "Opens the editor on the Submit page in challenge mode. You describe your method there, and it is shown on the leaderboard."));
@@ -322,10 +321,10 @@
     const tb = [...t.pattern].map(Number);
     const comp = h("div", "tv-compare");
     const fig = (bits, caption, diff) => { const f = h("figure"); f.append(R.thumb(bits, "tv-thumb", diff), h("figcaption", null, caption)); return f; };
-    comp.append(fig(tb, `Target ${id}: ${t.inserts} inserts`));
+    comp.append(fig(tb, `Target ${id}`));
     if (shown && /^[01]{105}$/.test(shown.pattern || "")) {
       const eb = [...shown.pattern].map(Number), miss = eb.reduce((a, b, k) => a + (b !== tb[k] ? 1 : 0), 0);
-      comp.append(fig(eb, `Entry #${shown.issue}: ${eb.reduce((a, b) => a + b, 0)} inserts`, tb));
+      comp.append(fig(eb, `Entry #${shown.issue}`, tb));
       const note = h("p", "fineprint"); note.append(h("span", "tv-miss", `${miss} of 105 cells differ`), ` between the entry and the target (outlined in red). Different patterns can give very similar curves, which is what makes the problem interesting.`);
       const open = h("a", null, "Open this entry's pattern in the editor"); open.href = R.pageUrl("submit.html", { pattern: shown.pattern, challenge: id }) + "#single";
       const op = h("p", "fineprint"); op.append(open);
@@ -341,7 +340,7 @@
     const txt = h("div", "cb-text");
     const back = h("a", null, "see the target and leaderboard"); back.href = R.pageUrl("challenge.html");
     txt.append(h("p", "cb-title", `Challenge mode: designing for target ${t.id}`),
-      h("p", "fineprint", `Aim for 20 N at ${t.max_displacement_mm.toFixed(1)} mm. The submit button below now sends your pattern to the challenge. `));
+      h("p", "fineprint", `The submit button below now sends your pattern to the challenge. `));
     txt.lastChild.append(back, ".");
     const lab = h("label", "cb-label", "Your method (filled into the form, where you can still edit it)");
     const ta = document.createElement("textarea"); ta.rows = 2; ta.maxLength = 1500; ta.id = "cb-method";
@@ -368,8 +367,7 @@
       const n = targets.length, zip = new JSZip();
       zip.file("targets_dataData.npy", R.npyWrite("<f4", [n, 200], [R.npyEncode("<f4", targets.flatMap(t => t.dataData))]));
       zip.file("targets_maxData.npy", R.npyWrite("<f8", [n], [R.npyEncode("<f8", targets.map(t => t.max_displacement_mm))]));
-      zip.file("targets.csv", "row,target,max_displacement_mm,inserts\n" +
-        targets.map((t, k) => `${k},${t.id},${t.max_displacement_mm},${t.inserts}`).join("\n") + "\n");
+      zip.file("targets.csv", "row,target\n" + targets.map((t, k) => `${k},${t.id}`).join("\n") + "\n");
       let long = "target,point,displacement_mm,force_N,dataData\n";
       targets.forEach(t => t.dataData.forEach((v, k) => {
         long += `${t.id},${k},${(t.max_displacement_mm * k / (t.dataData.length - 1)).toFixed(4)},${((v + 1) * FLIM / 2).toFixed(4)},${v}\n`;
@@ -394,7 +392,7 @@ targets_dataData.npy  shape (${n}, 200), float32
   in the data set.
 targets_maxData.npy   shape (${n},), float64
   Displacement at which the force reached 20 N [mm]. Point k is at maxData * k / 199.
-targets.csv           target name, displacement at 20 N, number of inserts
+targets.csv           which row of the .npy files is which target
 targets_curves.csv    the same curves in long form: target, point, displacement [mm],
                       force [N], dataData
 targets_patterns.txt  the pattern of each target: "T1 <105 digits>" (bottom row first,
