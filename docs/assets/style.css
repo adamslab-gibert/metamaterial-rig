@@ -411,6 +411,10 @@ textarea:focus-visible { outline-offset: 0; }
 .tv-side h3 { margin: 0 0 .3rem; font-size: 1.3rem; }
 .tv-side p { margin: 0 0 .8rem; }
 .tv-side .submit { display: inline-block; border: 0; cursor: pointer; }
+.tv-entry { display: flex; gap: 14px; align-items: center; margin-top: 4px; }
+.tv-entry .tv-thumb { width: 72px; flex: none; }
+.tv-entry-text { display: grid; gap: 3px; font-size: .92rem; color: var(--ink-2); }
+.tv-entry-text strong { color: var(--ink); }
 .lb-wrap { grid-column: 1 / -1; margin-top: 4px; }
 .lb { width: 100%; border-collapse: collapse; font-size: .93rem; }
 .lb th { text-align: left; font-size: .78rem; font-weight: 640; color: var(--ink-2); text-transform: uppercase; letter-spacing: .04em; padding: 0 10px 6px 0; border-bottom: 2px solid var(--ink); }

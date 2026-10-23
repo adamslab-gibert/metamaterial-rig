@@ -316,6 +316,18 @@
     const go = h("button", "submit", `Design a pattern for ${id}`); go.type = "button";
     go.onclick = () => { location.href = R.pageUrl("submit.html", { challenge: id }) + "#single"; };
     right.append(go, h("p", "fineprint", "Opens the editor on the Submit page in challenge mode. You describe your method there, and it is shown on the leaderboard."));
+    // the pattern the shown entry used (the target's own pattern stays secret)
+    if (shown && /^[01]{105}$/.test(shown.pattern || "")) {
+      const bits = [...shown.pattern].map(Number), box = h("div", "tv-entry");
+      box.append(R.thumb(bits, "tv-thumb"));
+      const txt = h("div", "tv-entry-text");
+      txt.append(h("strong", null, `Entry #${shown.issue} by ${shown.name || shown.user}`),
+        h("span", null, `${bits.reduce((a, b) => a + b, 0)} inserts · ${shown.score_N.toFixed(3)} N · ${shown.max_displacement_mm != null ? shown.max_displacement_mm.toFixed(1) + " mm at 20 N" : ""}`));
+      const open = h("a", null, "Open this pattern in the editor"); open.href = R.pageUrl("submit.html", { pattern: shown.pattern, challenge: id }) + "#single";
+      txt.append(open);
+      box.append(txt);
+      right.append(h("p", "fineprint", "The target's own pattern is secret. This is the pattern the shown entry used:"), box);
+    }
 
     drawBoard(shown);
   }
