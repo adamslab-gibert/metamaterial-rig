@@ -68,5 +68,19 @@
   "method": "RC based algorithm. Trial 1",
   "pattern": "101010000000101010110110101110011100111010010110000011010010111000110010101111011110011101011010110110101",
   "curve": "results/14/4/curve.json"
+ },
+ {
+  "issue": 14,
+  "batch_index": 5,
+  "user": "adamslab-gibert",
+  "name": "Ab",
+  "target": "T6",
+  "score_N": 1.3414,
+  "stroke_error_mm": -5.021,
+  "max_displacement_mm": 20.279,
+  "tested_at": "2026-10-23T02:33:08Z",
+  "method": "RC based algorithm. Trial 1",
+  "pattern": "110111000110010111101101101101101101010010010001001001001000000101101011110111010111110101110001010101111",
+  "curve": "results/14/5/curve.json"
  }
 ]
