@@ -446,9 +446,29 @@ textarea:focus-visible { outline-offset: 0; }
   .lb, .lb tbody, .lb tr, .lb td { display: block; width: 100%; }
   .lb tr { padding: 8px 0; border-bottom: 1px solid var(--rule); }
   .lb td { border: 0; padding: 2px 0; max-width: none; }
-  .lb-all .lb-t .lb-score, .lb-all .lb-medal, .lb-all .lb-show, .lb-overall, .lb-req { display: inline; margin-left: 6px; }
-  .lb-t.none::before { content: attr(data-label) ": "; }
   .lb td::before { content: attr(data-label) ": "; color: var(--ink-2); font-weight: 640; font-size: .82rem; }
+  /* the challenge leaderboard on a phone: one card per submission, the ten targets in a 2-column grid */
+  .lb-all tbody tr { display: grid; grid-template-columns: 1fr 1fr; gap: 6px 8px; padding: 12px 0 14px; }
+  .lb-all .lb-rank, .lb-all .lb-who, .lb-all .lb-method { grid-column: 1 / -1; padding: 0; }
+  .lb-all .lb-rank { font-size: 1rem; }
+  .lb-all .lb-rank::before { content: "Rank "; }
+  .lb-all .lb-who::before { content: ""; }
+  .lb-all .lb-who a { font-weight: 700; font-size: 1.02rem; }
+  .lb-all .lb-overall, .lb-all .lb-req { display: inline; margin-left: 8px; }
+  .lb-all .lb-method { margin-top: 4px; font-size: .88rem; }
+  .lb-all .lb-method::before { content: "Method: "; }
+  .lb-all .lb-t { width: auto; min-width: 0; background: var(--sheet); border-radius: 6px; padding: 6px 8px; font-size: .84rem; line-height: 1.35; white-space: normal; }
+  .lb-all .lb-t::before { content: attr(data-label); font-weight: 760; color: var(--ink); margin-right: 6px; }
+  .lb-all .lb-t.none { color: var(--ink-2); }
+  .lb-all .lb-t.none::before { content: attr(data-label); }
+  .lb-all .lb-t .lb-score { display: inline; font-size: .95rem; }
+  .lb-all .lb-medal { display: inline; margin-left: 5px; }
+  .lb-all .lb-miss { display: block; font-size: .74rem; white-space: nowrap; }
+  .lb-all .lb-show { display: inline-block; margin: 3px 0 0; padding: .05rem .5rem; font-size: .72rem; }
+  .lb-all .lb-t.on { box-shadow: inset 0 0 0 2px var(--insert-edge); }
+  /* the entry-vs-target comparison and the chart switch on a phone */
+  .tv-compare .tv-thumb { width: 110px; height: auto; margin: 0 auto; }
+  .tv-view { font-size: .78rem; padding: .3rem .6rem; }
 }
 
 /* ---------- explorer ---------- */
@@ -499,7 +519,8 @@ main > .first, main > section.first { margin-top: 0; padding-top: 0; border-top:
   .topbar { gap: 10px 12px; }
   .brand { margin-right: 0; width: 100%; }
   .site-nav { order: 2; }
-  .site-nav a { padding: .35rem .7rem; }
+  .site-nav { gap: 2px; }
+  .site-nav a { padding: .35rem .55rem; font-size: .95rem; }
   .site-nav { order: 2; width: auto; }
   .rig-pill { order: 3; }
 }
