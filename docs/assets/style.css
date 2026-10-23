@@ -675,3 +675,12 @@ body.gated { overflow: hidden; }
 /* wrong admin password */
 .admin-msg.imposter { animation: imposter .6s ease; }
 @keyframes imposter { 10%, 50%, 90% { transform: translateX(-6px); } 30%, 70% { transform: translateX(6px); } }
+
+/* cells that differ between two patterns (challenge comparison) */
+.lattice .cell.diff > path:first-child { stroke: #B23A2B; stroke-width: .34; }
+.tv-compare { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+.tv-compare figure { margin: 0; text-align: center; }
+.tv-compare .tv-thumb { width: 100%; max-width: 110px; }
+.tv-compare figcaption { font-size: .85rem; color: var(--ink-2); margin-top: 4px; }
+.tv-miss { font-weight: 700; color: var(--ink); }
+.lb-miss { display: block; font-size: .72rem; color: var(--ink-2); }

@@ -179,7 +179,8 @@
     catch (e) { if ($("target-view")) $("target-view").innerHTML = '<p class="empty-note">The challenge targets could not be loaded.</p>'; return; }
     if ($("challenge-banner")) {                       // Submit page: challenge mode from ?challenge=T3
       const want = (new URLSearchParams(location.search).get("challenge") || "").toUpperCase();
-      if (targets.some(t => t.id === want)) { R.setChallenge(want, ""); drawBanner(); }
+      const tw = targets.find(t => t.id === want);
+      if (tw) { R.setChallenge(want, "", tw.pattern); drawBanner(); }
     }
     if (!$("targets")) return;
     try { board = DEMO ? demoBoard() : await getJSON(`${RAW}/results/leaderboard.json`); } catch (e) { board = []; }
@@ -237,6 +238,7 @@
         const place = [...top3[t.id]].indexOf(entryKey(e));
         c.append(h("span", "lb-score", e.score_N.toFixed(3)));
         if (place >= 0) c.append(h("span", "lb-medal", ["1st", "2nd", "3rd"][place]));
+        if (/^[01]{105}$/.test(e.pattern || "")) { const tb = t.pattern; c.append(h("span", "lb-miss", `${[...e.pattern].reduce((a, b, k) => a + (b !== tb[k] ? 1 : 0), 0)} cells off`)); }
         if (place >= 0 && e.curve) {
           const show = h("button", "lb-show", "Curve"); show.type = "button"; show.title = `Show this entry against target ${t.id}`;
           show.onclick = ev => { ev.stopPropagation(); selectTarget(t.id, e); $("challenge").scrollIntoView({ behavior: "smooth", block: "start" }); };
@@ -316,20 +318,19 @@
     const go = h("button", "submit", `Design a pattern for ${id}`); go.type = "button";
     go.onclick = () => { location.href = R.pageUrl("submit.html", { challenge: id }) + "#single"; };
     right.append(go, h("p", "fineprint", "Opens the editor on the Submit page in challenge mode. You describe your method there, and it is shown on the leaderboard."));
-    // the pattern the shown entry used (the target's own pattern stays secret)
+    // the target's pattern, and the shown entry's pattern with the cells that differ outlined
+    const tb = [...t.pattern].map(Number);
+    const comp = h("div", "tv-compare");
+    const fig = (bits, caption, diff) => { const f = h("figure"); f.append(R.thumb(bits, "tv-thumb", diff), h("figcaption", null, caption)); return f; };
+    comp.append(fig(tb, `Target ${id}: ${t.inserts} inserts`));
     if (shown && /^[01]{105}$/.test(shown.pattern || "")) {
-      const bits = [...shown.pattern].map(Number), box = h("div", "tv-entry");
-      box.append(R.thumb(bits, "tv-thumb"));
-      const txt = h("div", "tv-entry-text");
-      txt.append(h("strong", null, `Entry #${shown.issue} by ${shown.name || shown.user}`),
-        h("span", null, `${bits.reduce((a, b) => a + b, 0)} inserts · ${shown.score_N.toFixed(3)} N · ${shown.max_displacement_mm != null ? shown.max_displacement_mm.toFixed(1) + " mm at 20 N" : ""}`));
-      const open = h("a", null, "Open this pattern in the editor"); open.href = R.pageUrl("submit.html", { pattern: shown.pattern, challenge: id }) + "#single";
-      txt.append(open);
-      box.append(txt);
-      right.append(h("p", "fineprint", "The target's own pattern is secret. This is the pattern the shown entry used:"), box);
-    }
-
-    drawBoard(shown);
+      const eb = [...shown.pattern].map(Number), miss = eb.reduce((a, b, k) => a + (b !== tb[k] ? 1 : 0), 0);
+      comp.append(fig(eb, `Entry #${shown.issue}: ${eb.reduce((a, b) => a + b, 0)} inserts`, tb));
+      const note = h("p", "fineprint"); note.append(h("span", "tv-miss", `${miss} of 105 cells differ`), ` between the entry and the target (outlined in red). Different patterns can give very similar curves, which is what makes the problem interesting.`);
+      const open = h("a", null, "Open this entry's pattern in the editor"); open.href = R.pageUrl("submit.html", { pattern: shown.pattern, challenge: id }) + "#single";
+      const op = h("p", "fineprint"); op.append(open);
+      right.append(comp, note, op);
+    } else right.append(comp);
   }
   function drawBanner() {
     const box = $("challenge-banner"), t = targets.find(x => x.id === challengeTarget());
@@ -355,7 +356,7 @@
   let _ct = null;
   const challengeTarget = () => _ct;
   const setCh = R.setChallenge;
-  R.setChallenge = (t, m) => { _ct = t || null; setCh(t, m); };
+  R.setChallenge = (t, m, pattern) => { _ct = t || null; const tp = pattern || (targets.find(x => x.id === t) || {}).pattern; setCh(t, m, tp); };
 
   // ---------------------------------------------------------------- challenge: download targets, upload entries
   const MAX_ENTRIES = 10;
@@ -374,14 +375,17 @@
         long += `${t.id},${k},${(t.max_displacement_mm * k / (t.dataData.length - 1)).toFixed(4)},${((v + 1) * FLIM / 2).toFixed(4)},${v}\n`;
       }));
       zip.file("targets_curves.csv", long);
+      zip.file("targets_patterns.txt", targets.map(t => `${t.id} ${t.pattern}`).join("\n") + "\n");
       const site = `https://${CFG.owner}.github.io/${CFG.repo}/`;
       zip.file("README.txt", `INVERSE DESIGN CHALLENGE: TARGET CURVES
 ${"=".repeat(78)}
 ${CFG.labName || ""}, Purdue University. Downloaded ${new Date().toISOString().slice(0, 10)} from ${site}challenge.html
 
-Ten force-displacement curves measured on the rig. Their patterns are secret and are
-not in the published data set. Find, for any target, a pattern of inserts whose
-measured curve matches it.
+Ten force-displacement curves measured on the rig. Their patterns are published
+(targets_patterns.txt) but are not in the data set. Find, for any target, a DIFFERENT
+pattern of inserts whose measured curve matches it: an entry that is the target's own
+pattern is refused. Many different patterns give near-identical curves, which is the
+point of the problem.
 
 FILES (row k of every file is target T(k+1))
 targets_dataData.npy  shape (${n}, 200), float32
@@ -394,6 +398,8 @@ targets.csv           target name, displacement at 20 N, buckling events
                       (force drops larger than 1.5 % of the peak force)
 targets_curves.csv    the same curves in long form: target, point, displacement [mm],
                       force [N], dataData
+targets_patterns.txt  the pattern of each target: "T1 <105 digits>" (bottom row first,
+                      1 = insert), one line per target
 
 SCORE
   Root-mean-square (RMS) difference between the measured curve of your pattern and the
@@ -463,6 +469,8 @@ standard split (${site}challenge.html#split): train.txt / validation.txt / test.
     });
     if (pl.length > MAX_ENTRIES) errors.push(`The patterns file has ${pl.length} lines. At most ${MAX_ENTRIES} are allowed (one per target).`);
     if (pl.length && tl.length && pl.length !== tl.length) errors.push(`The patterns file has ${pl.length} lines but the targets file has ${tl.length}. They need one line each per entry.`);
+    if (errors.length) return { errors };
+    codes.forEach((c, k) => { const t = targets.find(x => x.id === tids[k]); if (t && t.pattern === c) errors.push(`patterns, line ${k + 1} is target ${tids[k]}'s own pattern. The challenge is to find a different pattern with the same curve.`); });
     if (errors.length) return { errors };
     const bits = codes.map(c => [...c].map(Number));
     return { errors: [], items: bits.map((b, k) => ({ target: tids[k], bits: b, island: window.RigIsland.classify(b) === true })), extra: entries.length - 2 };

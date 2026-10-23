@@ -5,12 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="color-scheme" content="light">
   <title>Challenge · Metamaterial Test Rig</title>
-  <meta name="description" content="Inverse-design benchmark: find a metamaterial pattern that reproduces a secret target force curve. Entries are tested on the real rig and ranked on a public leaderboard.">
+  <meta name="description" content="Inverse-design benchmark: find a metamaterial pattern that reproduces a target force curve. Entries are tested on the real rig and ranked on a public leaderboard.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=202610230323">
-  <script src="assets/config.js?v=202610230323"></script>
+  <link rel="stylesheet" href="assets/style.css?v=202610230423">
+  <script src="assets/config.js?v=202610230423"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to the content</a>
@@ -29,14 +29,14 @@
         <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
       </div>
       <h1>Inverse Design Challenge</h1>
-      <p class="lede lede-wide">Here are ten force curves measured on this rig. The patterns that produced them are secret. Your task is to find a pattern that reproduces one of these curves. You can design it in the editor or with your own code. The rig then tests your pattern and your score goes on the leaderboard.</p>
+      <p class="lede lede-wide">Here are ten force curves measured on this rig, each with the pattern that produced it. Your task is to find a different pattern that reproduces one of these curves. Many patterns give very similar curves, so there is no single right answer. You can design your pattern in the editor or with your own code. The rig then tests it and your score goes on the leaderboard.</p>
     </div>
   </header>
 
   <main id="main">
     <section class="wrap first" id="challenge" aria-labelledby="challenge-title">
       <h2 id="challenge-title" class="visually-hidden">Targets and leaderboard</h2>
-      <p class="section-note note-wide">Each target below is a measured force curve whose pattern is secret and not in the data set. When you submit an entry, the rig tests it and scores it by how closely its curve matches the target. The score is the root-mean-square (RMS) difference between the two curves in newtons. The difference in displacement at 20 N is shown alongside.</p>
+      <p class="section-note note-wide">Each target below is a measured force curve. Its pattern is shown next to the chart but is not in the data set, and an entry that simply copies it is refused. When you submit an entry, the rig tests it and scores it by how closely its curve matches the target. The score is the root-mean-square (RMS) difference between the two curves in newtons. The difference in displacement at 20 N and the number of cells that differ from the target's pattern are shown alongside.</p>
       <div class="targets" id="targets" role="tablist" aria-label="Challenge targets"></div>
       <div class="target-view" id="target-view"></div>
     </section>
@@ -85,6 +85,7 @@
             <li><code>targets_maxData.npy</code>: displacement at 20&nbsp;N, mm</li>
             <li><code>targets.csv</code>: target name, displacement at 20&nbsp;N, buckling events</li>
             <li><code>targets_curves.csv</code>: the same curves as displacement (mm) and force (N)</li>
+            <li><code>targets_patterns.txt</code>: the pattern of each target</li>
             <li><code>README.txt</code>: formats, scoring and how to submit</li>
           </ul>
           <button type="button" class="submit" id="ch-download">Download the target curves (.zip)</button>
@@ -124,10 +125,10 @@
     </div>
   </footer>
 
-  <script src="assets/jszip.min.js?v=202610230323"></script>
-  <script src="assets/island.js?v=202610230323"></script>
-  <script src="assets/admin-gate.js?v=202610230323"></script>
-  <script src="assets/app.js?v=202610230323"></script>
-  <script src="assets/extras.js?v=202610230323"></script>
+  <script src="assets/jszip.min.js?v=202610230423"></script>
+  <script src="assets/island.js?v=202610230423"></script>
+  <script src="assets/admin-gate.js?v=202610230423"></script>
+  <script src="assets/app.js?v=202610230423"></script>
+  <script src="assets/extras.js?v=202610230423"></script>
 </body>
 </html>

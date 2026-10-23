@@ -51,7 +51,8 @@
     const nodes = [];
     CELLS.forEach(cell => {
       const on = bits[idx(cell)] === 1;
-      const g = el("g", { class: "cell" + (on ? " on" : "") }, svg);
+      const differs = opts.diff && opts.diff[idx(cell)] !== bits[idx(cell)];   // cells that differ from another pattern
+      const g = el("g", { class: "cell" + (on ? " on" : "") + (differs ? " diff" : "") }, svg);
       el("path", { d: diamond(cell.c, cell.r) }, g);
       el("path", { class: "core", d: diamond(cell.c, cell.r, .62) }, g);
       if (opts.interactive) {
@@ -66,11 +67,11 @@
     return nodes;
   }
 
-  function thumb(bits, cls = "thumb") {
+  function thumb(bits, cls = "thumb", diff) {
     const svg = document.createElementNS(NS, "svg");
     svg.setAttribute("class", "lattice " + cls);
     svg.setAttribute("aria-hidden", "true");
-    drawLattice(svg, bits);
+    drawLattice(svg, bits, diff ? { diff } : {});
     return svg;
   }
 
@@ -97,6 +98,9 @@
     if (!fromText) { codeBox.value = bits.join(""); codeMsg.textContent = ""; codeMsg.classList.remove("bad"); }
     const newIssue = `https://github.com/${CFG.owner}/${CFG.repo}/issues/new?`;
     const who = yourName(), nameQ = `&name=${encodeURIComponent(who)}`;
+    const copyOfTarget = challenge.target && challenge.targetPattern && bits.join("") === challenge.targetPattern;
+    if (copyOfTarget) { codeMsg.textContent = `This is target ${challenge.target}'s own pattern. The challenge is to find a different pattern with the same curve, so it can't be submitted.`; codeMsg.classList.add("bad"); submit.setAttribute("aria-disabled", "true"); }
+    else if (challenge.target) submit.removeAttribute("aria-disabled");
     if (challenge.target) {
       submit.href = newIssue + `template=challenge.yml&title=${encodeURIComponent(`Challenge ${challenge.target}: ${n} inserts (${who})`)}` + nameQ +
         `&target=${challenge.target}&pattern=${bits.join("")}` + (challenge.method ? `&method=${encodeURIComponent(challenge.method.slice(0, 1500))}` : "");
@@ -1307,7 +1311,7 @@ ${line}
     npyWrite, npyEncode, matrixOf,
     getPattern: () => bits.slice(),
     loadPattern(arr) { bits = arr.slice(); if (PAGE.editor) render(); },
-    setChallenge(target, method) { challenge.target = target || null; challenge.method = method || ""; if (PAGE.editor) render(); }
+    setChallenge(target, method, pattern) { challenge.target = target || null; challenge.method = method || ""; challenge.targetPattern = pattern || null; if (PAGE.editor) render(); }
   };
 
   window.Rig.pageUrl = pageUrl;

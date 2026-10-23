@@ -107,6 +107,13 @@ function challengeTargets() {
     return JSON.parse(require("fs").readFileSync(path, "utf8")).targets.map(t => t.id);
   } catch (e) { return null; }
 }
+/** The targets' own patterns {id: 105 digits}: an entry may not simply copy one. */
+function targetPatterns() {
+  try {
+    const path = require("path").join(process.env.GITHUB_WORKSPACE || ".", "docs/data/challenge.json");
+    return Object.fromEntries(JSON.parse(require("fs").readFileSync(path, "utf8")).targets.filter(t => t.pattern).map(t => [t.id, t.pattern]));
+  } catch (e) { return {}; }
+}
 
 function consentGiven(body) {
   return /-\s*\[[xX]\]\s*I agree/.test(body || "");
@@ -197,6 +204,8 @@ async function run({ github, context, core }) {
     const ids = challengeTargets();
     const bad = ids ? parsed.entries.map(e => e.target).filter(t => !ids.includes(t)) : [];
     if (bad.length) return fail(`There is no target ${bad.join(", ")}. The targets are ${ids.join(", ")}.`);
+    const own = targetPatterns(), copies = parsed.entries.filter(e => own[e.target] && own[e.target] === e.code).map(e => e.target);
+    if (copies.length) return fail(`The entry for ${copies.join(", ")} is the target's own pattern. The challenge is to find a different pattern with the same curve.`);
     if (section(issue.body, "method").replace(/\s+/g, " ").length < 20)
       return fail("Describe your method in the Method field (at least 20 characters). It is shown on the leaderboard.");
   } else if (isChallenge) {
@@ -204,6 +213,7 @@ async function run({ github, context, core }) {
     const ids = challengeTargets();
     if (!target) return fail("Enter the challenge target (T1 to T10) in the Target field.");
     if (ids && !ids.includes(target)) return fail(`There is no target ${target}. The targets are ${ids.join(", ")}.`);
+    if (targetPatterns()[target] && targetPatterns()[target] === parsed.code) return fail(`This is target ${target}'s own pattern. The challenge is to find a different pattern with the same curve.`);
     if (section(issue.body, "method").replace(/\s+/g, " ").length < 20)
       return fail("Describe your method in the Method field (at least 20 characters). It is shown on the leaderboard.");
   }
