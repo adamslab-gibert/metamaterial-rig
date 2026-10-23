@@ -289,7 +289,7 @@
   "stroke_error_mm": -4.752,
   "max_displacement_mm": 13.048,
   "tested_at": "2026-10-23T05:07:42Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "111111111101011111010100101010110001101110101110010000100010011010111011111011111011111011110111101111011",
   "curve": "results/16/0/curve.json"
  },
@@ -303,7 +303,7 @@
   "stroke_error_mm": 2.262,
   "max_displacement_mm": 21.162,
   "tested_at": "2026-10-23T05:12:26Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "101111101110011110111111110100100100010010111001110011100110110100110010110101000010010101011111011111011",
   "curve": "results/16/1/curve.json"
  },
@@ -317,7 +317,7 @@
   "stroke_error_mm": 1.657,
   "max_displacement_mm": 22.357,
   "tested_at": "2026-10-23T05:16:50Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "101110011100110010100110010110001110011101111011110110100100110010110100110010000110010111101111101111101",
   "curve": "results/16/2/curve.json"
  },
@@ -331,7 +331,7 @@
   "stroke_error_mm": -9.365,
   "max_displacement_mm": 13.535,
   "tested_at": "2026-10-23T05:20:52Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "111011110111101111101111101111001101100111101110110000000000010110011101111011110111001011100011101111111",
   "curve": "results/16/3/curve.json"
  },
@@ -345,7 +345,7 @@
   "stroke_error_mm": 0.512,
   "max_displacement_mm": 24.712,
   "tested_at": "2026-10-23T05:25:57Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "111011101010110000001010010101010011001111010110110100110010110110001100001011100011101011110111100111010",
   "curve": "results/16/4/curve.json"
  },
@@ -359,7 +359,7 @@
   "stroke_error_mm": -4.236,
   "max_displacement_mm": 21.064,
   "tested_at": "2026-10-23T05:31:05Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "110111110111101110011100001010110010101000011010111110111100101010000001101001110100110101001101101100101",
   "curve": "results/16/5/curve.json"
  },
@@ -373,7 +373,7 @@
   "stroke_error_mm": -0.675,
   "max_displacement_mm": 26.325,
   "tested_at": "2026-10-23T05:38:35Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "110101101001010100101100001110101101001010100010011001010011011010110001101010100010000010111001111101110",
   "curve": "results/16/6/curve.json"
  },
@@ -387,7 +387,7 @@
   "stroke_error_mm": 0.09,
   "max_displacement_mm": 27.69,
   "tested_at": "2026-10-23T05:44:22Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "101011011010100110000110111110010110000101010100000001010100110100001100011011000101001010100110101101101",
   "curve": "results/16/7/curve.json"
  },
@@ -401,7 +401,7 @@
   "stroke_error_mm": 1.641,
   "max_displacement_mm": 31.841,
   "tested_at": "2026-10-23T05:49:49Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "110011100011011010011000000010101101101000010100000101010100110100110100100010010110001010000001101011011",
   "curve": "results/16/8/curve.json"
  },
@@ -415,7 +415,7 @@
   "stroke_error_mm": -3.16,
   "max_displacement_mm": 34.44,
   "tested_at": "2026-10-23T05:55:35Z",
-  "method": "RC based method_trial 3",
+  "method": "Reservoir to 8 pattern metrics",
   "pattern": "100001100000001000101000000000000100101011100111100100001000100101100010010000011010000110000110100100011",
   "curve": "results/16/9/curve.json"
  }
