@@ -404,6 +404,10 @@ textarea:focus-visible { outline-offset: 0; }
 .target-view { display: grid; grid-template-columns: minmax(0, 1fr); gap: 20px 36px; max-width: 1060px; align-items: start; }
 @media (min-width: 900px) { .target-view { grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); } }
 .tv-legend { font-size: .9rem; color: var(--ink-2); margin: .4rem 0 0; }
+.tv-switch { display: inline-flex; gap: 0; margin: 0 0 8px; border: 1.5px solid var(--rule); border-radius: 999px; overflow: hidden; }
+.tv-view { font: inherit; font-size: .85rem; padding: .3rem .8rem; border: 0; background: transparent; color: var(--ink-2); cursor: pointer; }
+.tv-view[aria-selected="true"] { background: var(--ink); color: #fff; }
+.tv-note { margin-top: 4px; max-width: 60ch; }
 .tv-side h3 { margin: 0 0 .3rem; font-size: 1.3rem; }
 .tv-side p { margin: 0 0 .8rem; }
 .tv-side .submit { display: inline-block; border: 0; cursor: pointer; }

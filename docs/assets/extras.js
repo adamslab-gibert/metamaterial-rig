@@ -25,9 +25,14 @@
       el("line", { class: v ? "grid" : "axis", x1: L, x2: W - Rr, y1: Y(v), y2: Y(v) }, s);
       if (v % 10 === 0) el("text", { x: L - 6, y: Y(v) + 4, "text-anchor": "end" }, s).textContent = v;
     });
-    const step = xmax > 30 ? 10 : 5;
-    for (let v = 0; v <= xmax; v += step) el("text", { x: X(v), y: H - B + 15, "text-anchor": "middle" }, s).textContent = v;
-    el("text", { x: W - Rr, y: H - 2, "text-anchor": "end" }, s).textContent = "displacement (mm)";
+    if (opts.normalised) {
+      [0, 0.25, 0.5, 0.75, 1].forEach(v => el("text", { x: X(v), y: H - B + 15, "text-anchor": "middle" }, s).textContent = v);
+      el("text", { x: W - Rr, y: H - 2, "text-anchor": "end" }, s).textContent = "fraction of the stroke to 20 N (0–1)";
+    } else {
+      const step = xmax > 30 ? 10 : 5;
+      for (let v = 0; v <= xmax; v += step) el("text", { x: X(v), y: H - B + 15, "text-anchor": "middle" }, s).textContent = v;
+      el("text", { x: W - Rr, y: H - 2, "text-anchor": "end" }, s).textContent = "displacement (mm)";
+    }
     el("text", { x: L + 4, y: T + 2, "text-anchor": "start" }, s).textContent = "force (N)";
     series.forEach(sr => el("path", { class: "line " + (sr.cls || ""), d: sr.x.map((v, k) => (k ? "L" : "M") + X(v).toFixed(1) + " " + Y(sr.y[k]).toFixed(1)).join("") }, s));
     const dot = el("circle", { class: "mark", r: 5, visibility: "hidden" }, s);
@@ -280,11 +285,31 @@
     const series = [{ ...fromData(t.dataData, t.max_displacement_mm), cls: "target" }];
     const shown = entry || list[0];
     if (shown && shown.curve) { try { series.push({ ...(await curveOfEntry(shown)), cls: "entry" }); } catch (e) { /* not published */ } }
+    // two views: the normalised stroke (0–1), which is what the score compares, and the actual displacement in mm
+    const comparing = series.length > 1;
     const xmax = Math.max(5, Math.ceil(Math.max(...series.flatMap(s => s.x)) / 5) * 5);
-    left.append(forceChart(series, { w: 460, h: 280, xmax, label: `Target ${id}${shown ? " and entry #" + shown.issue : ""}` }).svg);
+    const norm = series.map(sr => ({ ...sr, x: sr.x.map((_, k) => k / (sr.x.length - 1)) }));
+    const chartBox = h("div", "tv-chartbox");
+    const sw = h("div", "tv-switch"); sw.setAttribute("role", "tablist");
+    const mk = (label, key) => { const b = h("button", "tv-view", label); b.type = "button"; b.dataset.view = key; b.setAttribute("role", "tab"); sw.appendChild(b); return b; };
+    const bN = mk("Normalised stroke (0–1)", "norm"), bM = mk("Actual displacement (mm)", "mm");
+    const note = h("p", "fineprint tv-note");
+    const draw = view => {
+      chartBox.innerHTML = "";
+      [bN, bM].forEach(b => b.setAttribute("aria-selected", b.dataset.view === view ? "true" : "false"));
+      chartBox.append(view === "norm"
+        ? forceChart(norm, { w: 460, h: 280, xmax: 1, normalised: true, label: `Target ${id}${shown ? " and entry #" + shown.issue : ""}, normalised stroke` }).svg
+        : forceChart(series, { w: 460, h: 280, xmax, label: `Target ${id}${shown ? " and entry #" + shown.issue : ""}` }).svg);
+      note.textContent = view === "norm"
+        ? "Both curves stretched to the same length, 0 to 1 of their own stroke to 20 N. The score is the RMS gap between the lines in this view."
+        : "Each curve against the displacement the rig measured. The difference in where the curves end is the Δ at 20 N shown on the leaderboard.";
+    };
+    bN.onclick = () => draw("norm"); bM.onclick = () => draw("mm");
+    left.append(sw, chartBox);
+    draw(comparing ? "norm" : "mm");
     const legend = h("p", "tv-legend");
     legend.innerHTML = `<span class="lg target"></span>Target ${id}` + (shown && series.length > 1 ? ` <span class="lg entry"></span>Entry #${shown.issue} by ${shown.name || shown.user} (${shown.score_N.toFixed(3)} N)` : "");
-    left.appendChild(legend);
+    left.append(legend, note);
 
     right.append(h("h3", null, `Target ${id}`),
       h("p", null, `Displacement at 20 N: ${t.max_displacement_mm.toFixed(1)} mm. Buckling events: ${t.buckling_events}. ${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
