@@ -278,5 +278,19 @@
   "method": "RC based method. Trial 2",
   "pattern": "000001110100000000000110011001010100001101011010100001001010110110001100001000100100100001000000010100010",
   "curve": "results/15/9/curve.json"
+ },
+ {
+  "issue": 16,
+  "batch_index": 0,
+  "user": "adamslab-gibert",
+  "name": "Ab",
+  "target": "T1",
+  "score_N": 1.5343,
+  "stroke_error_mm": -4.752,
+  "max_displacement_mm": 13.048,
+  "tested_at": "2026-10-23T05:07:42Z",
+  "method": "RC based method_trial 3",
+  "pattern": "111111111101011111010100101010110001101110101110010000100010011010111011111011111011111011110111101111011",
+  "curve": "results/16/0/curve.json"
  }
 ]
