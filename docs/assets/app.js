@@ -908,6 +908,8 @@ source.csv       ${fmt(n)} rows + header
     tested_at      for queue runs: date and time of the test (UTC)
 
 README.txt       this file
+split/           the standard training / validation / test split used for the inverse design
+                 challenge (row numbers, one per line); see ${site}challenge.html#split
 
 WHERE THE PUBLISHED ROWS COME FROM
 ${line}
@@ -953,6 +955,13 @@ ${line}
       for (let k = 0; k < n0; k++) src += `${k},published,,\n`;
       add.forEach((a, k) => { src += `${n0 + k},${String(a.issue).startsWith("auto-") ? "automatic" : "queue"},${a.issue},${a.tested_at}\n`; });
       zip.file("source.csv", src);
+      try {                      // the standard split (Challenge page), so the download is self-contained
+        const idx = await (await fetch(DATA + "split/index.json")).json();
+        for (const f of ["train", "validation", "test"]) {
+          const r = await fetch(`${DATA}split/${idx.current}/${f}.txt`);
+          if (r.ok) zip.file(`split/${idx.current}/${f}.txt`, await r.text());
+        }
+      } catch (e) { /* the split is optional */ }
       const date = new Date().toISOString().slice(0, 10);
       const islN = (base.island || 0) + add.filter(a => a.island).length;
       zip.file("README.txt", datasetReadme({ n, n0, add, islN, date, C, D, M, I }));

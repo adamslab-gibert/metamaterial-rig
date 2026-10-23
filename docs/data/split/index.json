@@ -1,0 +1,19 @@
+{
+ "block": 10000,
+ "seed": 2026,
+ "per_block": {
+  "train": 7500,
+  "validation": 1250,
+  "test": 1250
+ },
+ "current": "benchmark_20k",
+ "versions": [
+  {
+   "name": "benchmark_20k",
+   "rows": 20000,
+   "train": 15000,
+   "validation": 2500,
+   "test": 2500
+  }
+ ]
+}

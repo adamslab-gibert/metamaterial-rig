@@ -377,7 +377,8 @@ SUBMITTING
   At most one pattern per target per upload. You also describe your method.
   The pattern format is explained in the README of the data set download.
 
-The published data set (${site}data.html) is the training data. CC BY 4.0.
+The published data set (${site}data.html) is the training data (CC BY 4.0). Please use the
+standard split (${site}challenge.html#split): train.txt / validation.txt / test.txt.
 `);
       const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
       const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = "challenge_targets.zip";
@@ -495,9 +496,66 @@ The published data set (${site}data.html) is the training data. CC BY 4.0.
     if (!method) $("ch-method").focus();
   }
 
+  // ---------------------------------------------------------------- standard data split (docs/data/split/)
+  async function splitInfo() {
+    const idx = await getJSON("data/split/index.json");
+    return idx.versions.find(v => v.name === idx.current) || idx.versions[idx.versions.length - 1];
+  }
+  async function showSplit() {
+    if (!$("split-rows")) return;
+    try {
+      const v = await splitInfo();
+      $("split-rows").textContent = R.fmt(v.rows); $("split-last").textContent = R.fmt(v.rows - 1);
+      $("split-train").textContent = R.fmt(v.train); $("split-val").textContent = R.fmt(v.validation); $("split-test").textContent = R.fmt(v.test);
+      $("split-download").textContent = `Download the split, Benchmark ${v.rows / 1000}k (.zip)`;
+    } catch (e) { /* keep the default numbers */ }
+  }
+  async function downloadSplit() {
+    const note = $("split-note"), btn = $("split-download");
+    btn.disabled = true; note.textContent = "Preparing the zip…";
+    try {
+      const v = await splitInfo();
+      const files = await Promise.all(["train", "validation", "test"].map(async f => { const r = await fetch(`data/split/${v.name}/${f}.txt`); if (!r.ok) throw new Error(f); return [f + ".txt", await r.text()]; }));
+      const zip = new JSZip();
+      files.forEach(([name, text]) => zip.file(name, text));
+      const site = `https://${CFG.owner}.github.io/${CFG.repo}/`;
+      zip.file("README.txt", `STANDARD DATA SPLIT: BENCHMARK ${v.rows / 1000}K
+${"=".repeat(78)}
+${CFG.labName || ""}, Purdue University. Downloaded ${new Date().toISOString().slice(0, 10)} from ${site}challenge.html
+
+The benchmark set is the first ${R.fmt(v.rows)} runs of the data set (rows 0 to ${R.fmt(v.rows - 1)} of
+codeData.npy, dataData.npy and maxData.npy from ${site}data.html).
+
+train.txt        ${R.fmt(v.train)} row numbers: train only on these
+validation.txt   ${R.fmt(v.validation)} row numbers: tune your model on these
+test.txt         ${R.fmt(v.test)} row numbers: report your accuracy on these, never train on them
+
+HOW IT IS MADE
+  Rows are split in blocks of 10,000. Each block is shuffled once with a fixed seed and
+  divided into 7,500 training, 1,250 validation and 1,250 test rows. The benchmark grows in
+  steps of 10,000 runs (20k, 30k, ...) and a row's role never changes between versions.
+
+LOADING (Python)
+  import numpy as np
+  C = np.load("codeData.npy"); D = np.load("dataData.npy"); M = np.load("maxData.npy")
+  train = np.loadtxt("train.txt", dtype=int)
+  C[train], D[train], M[train]        # same for validation.txt and test.txt
+
+State the benchmark version you used (for example "Benchmark ${v.rows / 1000}k") with your method.
+The ten challenge targets are separate: their patterns are in none of these sets.
+`);
+      const blob = await zip.generateAsync({ type: "blob", compression: "DEFLATE" });
+      const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = `${v.name}_split.zip`;
+      document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 60000);
+      note.textContent = `Downloaded Benchmark ${v.rows / 1000}k: ${R.fmt(v.train)} training, ${R.fmt(v.validation)} validation and ${R.fmt(v.test)} test rows.`;
+    } catch (e) { note.textContent = "The download could not be prepared (" + e.message + ")."; }
+    btn.disabled = false;
+  }
+
   function setupUpload() {
     if (!$("ch-zip")) return;
     $("ch-download").onclick = downloadTargets;
+    if ($("split-download")) { $("split-download").onclick = downloadSplit; showSplit(); }
     const input = $("ch-zip"), drop = $("ch-drop");
     const handle = async file => {
       if (!file) return;
