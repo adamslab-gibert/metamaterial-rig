@@ -423,6 +423,7 @@ textarea:focus-visible { outline-offset: 0; }
 .lb-all .lb-t { width: 1%; }
 .lb-all .lb-method { min-width: 22ch; font-size: .82rem; }
 .lb-overall { display: block; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lb-req { display: block; font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
 .partial .lb-overall { font-weight: 400; color: var(--ink-2); }
 .lb-t { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lb-t.none { color: var(--ink-2); }
@@ -441,7 +442,7 @@ textarea:focus-visible { outline-offset: 0; }
   .lb, .lb tbody, .lb tr, .lb td { display: block; width: 100%; }
   .lb tr { padding: 8px 0; border-bottom: 1px solid var(--rule); }
   .lb td { border: 0; padding: 2px 0; max-width: none; }
-  .lb-all .lb-t .lb-score, .lb-all .lb-medal, .lb-all .lb-show, .lb-overall { display: inline; margin-left: 6px; }
+  .lb-all .lb-t .lb-score, .lb-all .lb-medal, .lb-all .lb-show, .lb-overall, .lb-req { display: inline; margin-left: 6px; }
   .lb-t.none::before { content: attr(data-label) ": "; }
   .lb td::before { content: attr(data-label) ": "; color: var(--ink-2); font-weight: 640; font-size: .82rem; }
 }

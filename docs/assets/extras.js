@@ -169,7 +169,7 @@
       "By hand: matched the stiffness first, then placed two weak rows to get the buckling events.",
       "Bayesian optimisation over a 12-dimensional island descriptor space."];
     return targets.flatMap((t, ti) => users.slice(0, 2 + (ti % 4)).map((u, k) => ({
-      issue: 100 + ti * 10 + k, curve: "demo", user: u, target: t.id, score_N: +(0.35 + ((ti * 7 + k * 13) % 17) / 20).toFixed(3),
+      issue: 100 + k, curve: "demo", user: u, target: t.id, score_N: +(0.35 + ((ti * 7 + k * 13) % 17) / 20).toFixed(3),
       stroke_error_mm: +((((ti + k) % 5) - 2) * 0.7).toFixed(2), method: methods[(ti + k) % methods.length],
       tested_at: new Date(Date.now() - (ti * 5 + k) * 3600e3).toISOString(), pattern: R.demoPattern(ti * 10 + k).join("")
     })));
@@ -187,18 +187,18 @@
     drawBoard();
     selectTarget(targets[0].id);
   }
-  // One leaderboard, one row per entrant (GitHub account). The overall score is the average of the entrant's
-  // best score on each of the ten targets, so only entrants who have entered all ten are ranked; the others
-  // are listed below, unranked, until they have. A "Show curve" link is offered for the top 3 of each target
-  // (the rig computer removes the stored curves of older entries outside the top 3).
+  // One leaderboard, one row per submission (request): a 10-target upload is one row with its own method and
+  // its own average, so one person can compare different algorithms or trials. The overall score is the
+  // average of the submission's best score on each of the ten targets; a submission is ranked once it has an
+  // entry for every target, the others are listed below unranked. "Curve" is offered for the top 3 per target.
   function boardRows() {
     const top3 = {}; targets.forEach(t => { top3[t.id] = new Set(ranked(t.id).slice(0, 3).map(entryKey)); });
     const by = new Map();
     board.forEach(e => {
-      const r = by.get(e.user) || { user: e.user, name: e.name || e.user, best: {}, latest: e };
+      const r = by.get(e.issue) || { issue: e.issue, user: e.user, name: e.name || e.user, best: {}, latest: e };
       if (!r.best[e.target] || e.score_N < r.best[e.target].score_N) r.best[e.target] = e;
-      if (new Date(e.tested_at) >= new Date(r.latest.tested_at)) { r.latest = e; r.name = e.name || e.user; }
-      by.set(e.user, r);
+      if (new Date(e.tested_at) >= new Date(r.latest.tested_at)) r.latest = e;
+      by.set(e.issue, r);
     });
     const rows = [...by.values()];
     rows.forEach(r => {
@@ -227,8 +227,8 @@
       const td = (txt, cls, label) => { const c = h("td", cls, txt); c.dataset.label = label; tr.appendChild(c); return c; };
       td(r.complete ? String(++rank) : "–", "lb-rank", "Rank");
       const who = td("", "lb-who", "Entrant");
-      const a = h("a", null, r.name); a.title = "GitHub: " + r.user; a.href = `https://github.com/${r.user}`; a.target = "_blank"; a.rel = "noopener";
-      who.append(a, h("span", "lb-overall", r.complete ? `${r.overall.toFixed(3)} N` : `${r.done} of ${targets.length} targets`));
+      const a = h("a", null, r.name); a.title = `Request #${r.issue} (GitHub: ${r.user})`; a.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/${r.issue}`; a.target = "_blank"; a.rel = "noopener";
+      who.append(a, h("span", "lb-req", `#${r.issue} · ${R.ago(r.latest.tested_at)}`), h("span", "lb-overall", r.complete ? `${r.overall.toFixed(3)} N` : `${r.done} of ${targets.length} targets`));
       targets.forEach(t => {
         const e = r.best[t.id];
         const c = td("", "lb-t", t.id);
@@ -250,7 +250,7 @@
       body.appendChild(tr);
     });
     tb.appendChild(body); wrap.appendChild(tb);
-    wrap.append(h("p", "fineprint", "Scores are the RMS difference to the target in newtons. The overall score is the average of an entrant's best score on each target, so an entrant is ranked once all ten targets have an entry. The curve can be shown for the three best entries of each target."));
+    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The curve can be shown for the three best entries of each target."));
   }
   const ranked = id => board.filter(e => e.target === id).sort((a, b) => a.score_N - b.score_N);
   function drawTargets() {
