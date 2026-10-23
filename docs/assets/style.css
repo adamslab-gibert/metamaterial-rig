@@ -598,6 +598,7 @@ body.gated { overflow: hidden; }
 @media (min-width: 860px) { .admin-left { position: sticky; top: 12px; } }
 .admin-live { max-width: none; }
 .admin-line { margin: 0; }
+.a-lb-method { max-width: 34ch; color: var(--ink-2); font-size: .9rem; }
 .admin-line .sub, .admin-actions .sub { color: var(--ink-2); font-size: .88rem; }
 .admin-pause .fineprint { margin-top: 4px; }
 .admin-table .admin-actions { padding-right: 0; }

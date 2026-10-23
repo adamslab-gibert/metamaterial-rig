@@ -211,27 +211,55 @@
   function showLeaderboard(board) {
     const body = $("a-lb-body");
     body.innerHTML = "";
-    $("a-lb-sum").textContent = board.length ? `${board.length} entr${board.length === 1 ? "y" : "ies"}` : "Empty";
-    if (!board.length) { body.innerHTML = '<tr><td colspan="5" class="empty-note">No challenge entries yet.</td></tr>'; return; }
-    const rows = board.slice().sort((a, b) => String(a.target).localeCompare(String(b.target), undefined, { numeric: true }) || a.score_N - b.score_N);
-    for (const e of rows) {
+    // one row per submission (request number), as on the Challenge page
+    const subs = new Map();
+    board.forEach(e => {
+      const r = subs.get(e.issue) || { issue: e.issue, user: e.user, name: e.name || e.user, method: e.method || "", entries: [], latest: e };
+      r.entries.push(e);
+      if (new Date(e.tested_at) >= new Date(r.latest.tested_at)) { r.latest = e; r.name = e.name || e.user; r.method = e.method || ""; }
+      subs.set(e.issue, r);
+    });
+    const rows = [...subs.values()].sort((a, b) => b.issue - a.issue);
+    $("a-lb-sum").textContent = rows.length ? `${rows.length} submission${rows.length === 1 ? "" : "s"}, ${board.length} entr${board.length === 1 ? "y" : "ies"}` : "Empty";
+    if (!rows.length) { body.innerHTML = '<tr><td colspan="5" class="empty-note">No challenge entries yet.</td></tr>'; return; }
+    for (const r of rows) {
       const tr = document.createElement("tr");
       const td = label => { const c = document.createElement("td"); c.dataset.label = label; tr.appendChild(c); return c; };
-      td("Target").innerHTML = `<strong></strong>`; tr.lastChild.firstChild.textContent = e.target;
-      const who = td("Entry");
-      who.innerHTML = `<a target="_blank" rel="noopener"></a> <span class="sub"></span>`;
-      who.firstChild.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/${e.issue}`;
-      who.firstChild.textContent = `#${e.issue}${e.batch_index != null ? " · " + (e.batch_index + 1) : ""}`;
-      who.lastChild.textContent = "by " + (e.name || e.user || "unknown") + (e.user && e.name && e.name !== e.user ? " · @" + e.user : "");
-      td("Score").textContent = e.score_N != null ? e.score_N.toFixed(3) + " N" : "–";
-      const w = td("Tested"); w.className = "q-when"; w.textContent = e.tested_at ? R.ago(e.tested_at) : "–";
+      const who = td("Submission");
+      who.innerHTML = `<a target="_blank" rel="noopener"></a><br><strong></strong> <span class="sub"></span>`;
+      who.firstChild.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/${r.issue}`; who.firstChild.textContent = `#${r.issue}`;
+      who.querySelector("strong").textContent = r.name; who.querySelector(".sub").textContent = (r.user && r.name !== r.user ? "@" + r.user + " · " : "") + R.ago(r.latest.tested_at);
+      const targets = r.entries.slice().sort((x, y) => +String(x.target).slice(1) - +String(y.target).slice(1));
+      td("Targets").textContent = targets.map(e => `${e.target} ${e.score_N.toFixed(3)}`).join(", ");
+      const n = new Set(targets.map(e => e.target)).size;
+      td("Overall").textContent = n >= 10 ? (targets.reduce((a, e) => a + e.score_N, 0) / targets.length).toFixed(3) + " N" : `${n} of 10 targets`;
+      const m = td("Method"); m.className = "a-lb-method"; m.textContent = r.method || "–";
       const a = document.createElement("div"); a.className = "admin-acts"; const ac = td("Actions"); ac.className = "admin-actions"; ac.appendChild(a);
+      const same = x => x.issue === r.issue;
+      a.appendChild(button("Edit name", "admin-btn", b => {
+        const name = window.prompt(`Name shown for submission #${r.issue}:`, r.name);
+        if (name == null) return;
+        const v = name.replace(/\s+/g, " ").trim().slice(0, 80);
+        if (!v) { window.alert("The name can't be empty."); return; }
+        act(b, "Saving", async () => {
+          await updateJson("results/leaderboard.json", [], d => d.map(x => same(x) ? { ...x, name: v } : x), `Admin: rename leaderboard submission #${r.issue}`);
+          return `#${r.issue} is now shown as "${v}". The Challenge page shows it within a minute or two.`;
+        });
+      }));
+      a.appendChild(button("Edit method", "admin-btn", b => {
+        const method = window.prompt(`Method shown for submission #${r.issue}:`, r.method);
+        if (method == null) return;
+        const v = method.replace(/\s+/g, " ").trim().slice(0, 1500);
+        act(b, "Saving", async () => {
+          await updateJson("results/leaderboard.json", [], d => d.map(x => same(x) ? { ...x, method: v } : x), `Admin: edit method of leaderboard submission #${r.issue}`);
+          return `The method of #${r.issue} is updated. The Challenge page shows it within a minute or two.`;
+        });
+      }));
       a.appendChild(button("Remove", "admin-btn danger", b => {
-        if (!window.confirm(`Remove the ${e.target} entry #${e.issue} by ${e.user} from the leaderboard?`)) return;
+        if (!window.confirm(`Remove submission #${r.issue} by ${r.name} (${targets.length} entr${targets.length === 1 ? "y" : "ies"}) from the leaderboard?`)) return;
         act(b, "Removing", async () => {
-          await updateJson("results/leaderboard.json", [], d => d.filter(x => !(x.issue === e.issue && (x.batch_index ?? null) === (e.batch_index ?? null))),
-            `Admin: remove leaderboard entry #${e.issue}${e.batch_index != null ? "/" + e.batch_index : ""}`);
-          return `Entry #${e.issue} removed from the leaderboard. The Challenge page shows it within a minute or two.`;
+          await updateJson("results/leaderboard.json", [], d => d.filter(x => !same(x)), `Admin: remove leaderboard submission #${r.issue}`);
+          return `Submission #${r.issue} removed from the leaderboard. The Challenge page shows it within a minute or two.`;
         });
       }));
       body.appendChild(tr);
