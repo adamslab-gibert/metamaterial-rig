@@ -264,7 +264,7 @@
       spark.svg.classList.add("spark");
       const best = ranked(t.id)[0];
       b.append(h("span", "t-id", t.id), spark.svg,
-        h("span", "t-sub", `20 N at ${t.max_displacement_mm.toFixed(1)} mm · ${t.buckling_events} bucklings`),
+        h("span", "t-sub", `20 N at ${t.max_displacement_mm.toFixed(1)} mm · ${t.inserts} inserts`),
         h("span", "t-best", best ? `Best ${best.score_N.toFixed(3)} N` : "No entries yet"));
       b.onclick = () => selectTarget(t.id);
       box.appendChild(b);
@@ -314,7 +314,7 @@
     left.append(legend, note);
 
     right.append(h("h3", null, `Target ${id}`),
-      h("p", null, `Displacement at 20 N: ${t.max_displacement_mm.toFixed(1)} mm. Buckling events: ${t.buckling_events}. ${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
+      h("p", null, `Displacement at 20 N: ${t.max_displacement_mm.toFixed(1)} mm. ${t.inserts} inserts. ${list.length} entr${list.length === 1 ? "y" : "ies"} so far.`));
     const go = h("button", "submit", `Design a pattern for ${id}`); go.type = "button";
     go.onclick = () => { location.href = R.pageUrl("submit.html", { challenge: id }) + "#single"; };
     right.append(go, h("p", "fineprint", "Opens the editor on the Submit page in challenge mode. You describe your method there, and it is shown on the leaderboard."));
@@ -341,7 +341,7 @@
     const txt = h("div", "cb-text");
     const back = h("a", null, "see the target and leaderboard"); back.href = R.pageUrl("challenge.html");
     txt.append(h("p", "cb-title", `Challenge mode: designing for target ${t.id}`),
-      h("p", "fineprint", `Aim for 20 N at ${t.max_displacement_mm.toFixed(1)} mm with ${t.buckling_events} buckling events. The submit button below now sends your pattern to the challenge. `));
+      h("p", "fineprint", `Aim for 20 N at ${t.max_displacement_mm.toFixed(1)} mm. The submit button below now sends your pattern to the challenge. `));
     txt.lastChild.append(back, ".");
     const lab = h("label", "cb-label", "Your method (filled into the form, where you can still edit it)");
     const ta = document.createElement("textarea"); ta.rows = 2; ta.maxLength = 1500; ta.id = "cb-method";
@@ -368,8 +368,8 @@
       const n = targets.length, zip = new JSZip();
       zip.file("targets_dataData.npy", R.npyWrite("<f4", [n, 200], [R.npyEncode("<f4", targets.flatMap(t => t.dataData))]));
       zip.file("targets_maxData.npy", R.npyWrite("<f8", [n], [R.npyEncode("<f8", targets.map(t => t.max_displacement_mm))]));
-      zip.file("targets.csv", "row,target,max_displacement_mm,buckling_events\n" +
-        targets.map((t, k) => `${k},${t.id},${t.max_displacement_mm},${t.buckling_events}`).join("\n") + "\n");
+      zip.file("targets.csv", "row,target,max_displacement_mm,inserts\n" +
+        targets.map((t, k) => `${k},${t.id},${t.max_displacement_mm},${t.inserts}`).join("\n") + "\n");
       let long = "target,point,displacement_mm,force_N,dataData\n";
       targets.forEach(t => t.dataData.forEach((v, k) => {
         long += `${t.id},${k},${(t.max_displacement_mm * k / (t.dataData.length - 1)).toFixed(4)},${((v + 1) * FLIM / 2).toFixed(4)},${v}\n`;
@@ -394,8 +394,7 @@ targets_dataData.npy  shape (${n}, 200), float32
   in the data set.
 targets_maxData.npy   shape (${n},), float64
   Displacement at which the force reached 20 N [mm]. Point k is at maxData * k / 199.
-targets.csv           target name, displacement at 20 N, buckling events
-                      (force drops larger than 1.5 % of the peak force)
+targets.csv           target name, displacement at 20 N, number of inserts
 targets_curves.csv    the same curves in long form: target, point, displacement [mm],
                       force [N], dataData
 targets_patterns.txt  the pattern of each target: "T1 <105 digits>" (bottom row first,
