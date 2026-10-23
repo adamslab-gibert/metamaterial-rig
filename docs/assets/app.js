@@ -1138,9 +1138,10 @@ ${line}
 
   // batch requests in the queue: count the pattern lines of the Patterns field
   function batchSize(body) {
-    const sec = (body || "").split(/^###\s+/m).find(x => /^patterns/i.test(x));
+    // a batch request lists patterns under "### Patterns"; a challenge batch lists "T3 <pattern>" lines under "### Entries"
+    const sec = (body || "").split(/^###\s+/m).find(x => /^(patterns|entries)/i.test(x));
     if (!sec) return null;
-    return sec.replace(/^.*\n/, "").split(/\r?\n/).map(l => l.trim())
+    return sec.replace(/^.*\n/, "").split(/\r?\n/).map(l => l.trim().replace(/^T\d+\s+/i, ""))
       .filter(l => /^[01]{105}$/.test(l) || /^[0-9a-fA-F]{27}$/.test(l)).length;
   }
 
