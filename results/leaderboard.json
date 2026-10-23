@@ -149,7 +149,7 @@
   "stroke_error_mm": -0.463,
   "max_displacement_mm": 17.337,
   "tested_at": "2026-10-23T03:16:16Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "111111011111111111111111111001100101001000100101101101111110111111111100110000000010011111101011111111111",
   "curve": "results/15/0/curve.json"
  },
@@ -163,7 +163,7 @@
   "stroke_error_mm": -1.625,
   "max_displacement_mm": 17.275,
   "tested_at": "2026-10-23T03:21:01Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "111011110110110110001110011111001110011101011011011010111000011010100111001110101111011100111001110111101",
   "curve": "results/15/1/curve.json"
  },
@@ -177,7 +177,7 @@
   "stroke_error_mm": 0.113,
   "max_displacement_mm": 20.812,
   "tested_at": "2026-10-23T03:25:46Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "111011110011101011011010110000101010101110001110101111001010100001101011010010110011111011101011110111101",
   "curve": "results/15/2/curve.json"
  },
@@ -191,7 +191,7 @@
   "stroke_error_mm": -7.6,
   "max_displacement_mm": 15.3,
   "tested_at": "2026-10-23T03:30:32Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "001111001111111110100100001110111110110010101110111010111100011010110111100111011110111101101111001110101",
   "curve": "results/15/3/curve.json"
  },
@@ -205,7 +205,7 @@
   "stroke_error_mm": 1.975,
   "max_displacement_mm": 26.175,
   "tested_at": "2026-10-23T03:35:57Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "111011010110000101010011010100001001011100111100111010110110101100011110011101010010000001011011011110111",
   "curve": "results/15/4/curve.json"
  },
@@ -219,7 +219,7 @@
   "stroke_error_mm": -0.811,
   "max_displacement_mm": 24.489,
   "tested_at": "2026-10-23T03:40:42Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "110011101011100000001000111111111000011100101010000010101000111010111110111100010010000111011111011110111",
   "curve": "results/15/5/curve.json"
  },
@@ -233,7 +233,7 @@
   "stroke_error_mm": -2.306,
   "max_displacement_mm": 24.694,
   "tested_at": "2026-10-23T03:46:07Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "111010011000011011011011010110001101001001000100101000010110110110001001000011101001011011010111010110101",
   "curve": "results/15/6/curve.json"
  },
@@ -247,7 +247,7 @@
   "stroke_error_mm": 0.243,
   "max_displacement_mm": 27.843,
   "tested_at": "2026-10-23T03:51:33Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "010101001001000101101111001111001110101101101001000100101101101011010001001001010100000101010011010110101",
   "curve": "results/15/7/curve.json"
  },
@@ -261,7 +261,7 @@
   "stroke_error_mm": -3.323,
   "max_displacement_mm": 26.877,
   "tested_at": "2026-10-23T03:59:23Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "011001010101001010000110100110010110010001000010010101110101110011010001101000100100000010100101011011011",
   "curve": "results/15/8/curve.json"
  },
@@ -275,7 +275,7 @@
   "stroke_error_mm": -2.34,
   "max_displacement_mm": 35.26,
   "tested_at": "2026-10-23T04:05:10Z",
-  "method": "RC based method. Trial 2",
+  "method": "Reservoir to n, k, L, grow with L cap",
   "pattern": "000001110100000000000110011001010100001101011010100001001010110110001100001000100100100001000000010100010",
   "curve": "results/15/9/curve.json"
  },
