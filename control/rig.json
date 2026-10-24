@@ -1,15 +1,15 @@
 {
- "accepting": true,
- "note": "",
- "updated": "2026-10-23T18:59:59.654Z",
+ "accepting": false,
+ "note": "Maintenance in progress.",
+ "updated": "2026-10-24T04:26:08.365Z",
  "home": false,
- "auto_fill": true,
+ "auto_fill": false,
  "command": {
   "id": "setup-1792710759312",
   "action": "setup",
   "at": "2026-10-22T23:12:39.312Z"
  },
- "maintenance": false,
+ "maintenance": true,
  "commands": [
   {
    "id": "setup-1792624909553",
