@@ -216,7 +216,7 @@
     wrap.innerHTML = "";
     if (!board.length) { wrap.append(h("p", "empty-note", "No entries yet. Be the first.")); return; }
     const all = boardRows(), top3 = all.top3;
-    const ranked = all.rows.filter(r => r.complete);
+    const rankedRows = all.rows.filter(r => r.complete);
     const rows = all.rows.slice(0, LB_SHOWN);
     const tb = h("table", "lb lb-all");
     const head = document.createElement("thead"), hr = document.createElement("tr");
@@ -228,7 +228,7 @@
       const tr = document.createElement("tr");
       if (!r.complete) tr.className = "partial";
       const td = (txt, cls, label) => { const c = h("td", cls, txt); c.dataset.label = label; tr.appendChild(c); return c; };
-      td(r.complete ? String(ranked.indexOf(r) + 1) : "–", "lb-rank", "Rank");
+      td(r.complete ? String(rankedRows.indexOf(r) + 1) : "–", "lb-rank", "Rank");
       const who = td("", "lb-who", "Entrant");
       const a = h("a", null, r.name); a.title = `Request #${r.issue} (GitHub: ${r.user})`; a.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/${r.issue}`; a.target = "_blank"; a.rel = "noopener";
       who.append(a, h("span", "lb-req", `#${r.issue} · ${R.ago(r.latest.tested_at)}`), h("span", "lb-overall", r.complete ? `${r.overall.toFixed(3)} N` : `${r.done} of ${targets.length} targets`));
@@ -237,9 +237,10 @@
         const c = td("", "lb-t", t.id);
         if (!e) { c.textContent = "–"; c.classList.add("none"); return; }
         if (shown && entryKey(e) === entryKey(shown)) c.classList.add("on");
-        const place = [...top3[t.id]].indexOf(entryKey(e));
+        const place = ranked(t.id).findIndex(x => entryKey(x) === entryKey(e));     // rank of this entry on this target
         c.append(h("span", "lb-score", e.score_N.toFixed(3)));
-        if (place >= 0) c.append(h("span", "lb-medal", ["1st", "2nd", "3rd"][place]));
+        const ord = n => n + (["th", "st", "nd", "rd"][(n % 100 - 20) % 10] || ["th", "st", "nd", "rd"][n % 100] || "th");
+        c.append(h("span", "lb-medal" + (place < 3 ? "" : " plain"), ord(place + 1)));
         if (/^[01]{105}$/.test(e.pattern || "")) { const tb = t.pattern; c.append(h("span", "lb-miss", `${[...e.pattern].reduce((a, b, k) => a + (b !== tb[k] ? 1 : 0), 0)} cells off`)); }
         if (e.curve) {
           const show = h("button", "lb-show", "Curve"); show.type = "button"; show.title = `Show this entry against target ${t.id}`;
@@ -254,7 +255,7 @@
       body.appendChild(tr);
     });
     tb.appendChild(body); wrap.appendChild(tb);
-    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The ten best submissions are shown. Curves of entries outside the three best for a target are kept for six weeks."));
+    wrap.append(h("p", "fineprint lb-note", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The ten best submissions are shown. Curves of entries outside the three best for a target are kept for six weeks."));
   }
   const ranked = id => board.filter(e => e.target === id).sort((a, b) => a.score_N - b.score_N);
   function drawTargets() {

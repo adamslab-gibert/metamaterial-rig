@@ -435,6 +435,8 @@ textarea:focus-visible { outline-offset: 0; }
 .lb-t.on { background: color-mix(in srgb, var(--insert) 14%, transparent); }
 .lb-t .lb-score { display: block; }
 .lb-medal { display: block; font-size: .72rem; font-weight: 700; color: var(--insert-edge); text-transform: uppercase; letter-spacing: .04em; }
+.lb-medal.plain { color: var(--ink-2); font-weight: 600; }
+.lb-note { max-width: none; }
 .lb-all .lb-show { display: block; margin-top: 3px; padding: .05rem .45rem; font-size: .72rem; }
 .lb-wrap { overflow-x: auto; }
 .lb-score { font-weight: 700; font-variant-numeric: tabular-nums; }
