@@ -427,6 +427,7 @@ textarea:focus-visible { outline-offset: 0; }
 .lb-all .lb-t { width: 1%; }
 .lb-all .lb-method { min-width: 22ch; font-size: .82rem; }
 .lb-overall { display: block; font-weight: 700; font-variant-numeric: tabular-nums; }
+.lb-more { margin: 10px 0 4px; }
 .lb-req { display: block; font-size: .78rem; color: var(--ink-2); white-space: nowrap; }
 .partial .lb-overall { font-weight: 400; color: var(--ink-2); }
 .lb-t { white-space: nowrap; font-variant-numeric: tabular-nums; }

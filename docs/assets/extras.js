@@ -210,23 +210,29 @@
     rows.sort((a, b) => (b.complete - a.complete) || (a.complete ? a.overall - b.overall : (b.done - a.done) || (new Date(b.latest.tested_at) - new Date(a.latest.tested_at))));
     return { rows, top3 };
   }
+  const LB_SHOWN = 10;          // ranked submissions shown at first; "Show all" reveals the rest and the partial ones
+  let lbShowAll = false;
   function drawBoard(shown) {
     const wrap = $("lb-all"); if (!wrap) return;
     wrap.innerHTML = "";
     if (!board.length) { wrap.append(h("p", "empty-note", "No entries yet. Be the first.")); return; }
-    const { rows, top3 } = boardRows();
+    const all = boardRows(), top3 = all.top3;
+    const ranked = all.rows.filter(r => r.complete), partial = all.rows.filter(r => !r.complete);
+    // a submission whose curve is being shown stays visible even when it is outside the top 10
+    const keep = r => shown && Object.values(r.best).some(e => entryKey(e) === entryKey(shown));
+    const rows = lbShowAll ? all.rows : [...ranked.filter((r, k) => k < LB_SHOWN || keep(r)), ...partial.filter(keep)];
+    const hidden = all.rows.length - rows.length;
     const tb = h("table", "lb lb-all");
     const head = document.createElement("thead"), hr = document.createElement("tr");
     [["Rank"], ["Entrant", "Overall score: the average over all ten targets"], ...targets.map(t => [t.id, `Best score for ${t.id}`]), ["Method"]]
       .forEach(([txt, title]) => { const th = h("th", null, txt); th.scope = "col"; if (title) th.title = title; hr.appendChild(th); });
     head.appendChild(hr); tb.appendChild(head);
     const body = document.createElement("tbody");
-    let rank = 0;
     rows.forEach(r => {
       const tr = document.createElement("tr");
       if (!r.complete) tr.className = "partial";
       const td = (txt, cls, label) => { const c = h("td", cls, txt); c.dataset.label = label; tr.appendChild(c); return c; };
-      td(r.complete ? String(++rank) : "–", "lb-rank", "Rank");
+      td(r.complete ? String(ranked.indexOf(r) + 1) : "–", "lb-rank", "Rank");
       const who = td("", "lb-who", "Entrant");
       const a = h("a", null, r.name); a.title = `Request #${r.issue} (GitHub: ${r.user})`; a.href = `https://github.com/${CFG.owner}/${CFG.repo}/issues/${r.issue}`; a.target = "_blank"; a.rel = "noopener";
       who.append(a, h("span", "lb-req", `#${r.issue} · ${R.ago(r.latest.tested_at)}`), h("span", "lb-overall", r.complete ? `${r.overall.toFixed(3)} N` : `${r.done} of ${targets.length} targets`));
@@ -252,7 +258,12 @@
       body.appendChild(tr);
     });
     tb.appendChild(body); wrap.appendChild(tb);
-    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The curve can be shown for the three best entries of each target."));
+    if (hidden > 0 || lbShowAll) {
+      const more = h("button", "admin-btn lb-more", lbShowAll ? `Show the top ${LB_SHOWN} only` : `Show all ${all.rows.length} submissions (${hidden} more${partial.length ? `, including ${partial.length} with fewer than ten targets` : ""})`);
+      more.type = "button"; more.onclick = () => { lbShowAll = !lbShowAll; drawBoard(shown); };
+      wrap.append(more);
+    }
+    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The ten best are shown; Show all lists the rest, including submissions that have not covered every target yet. The curve can be shown for the three best entries of each target."));
   }
   const ranked = id => board.filter(e => e.target === id).sort((a, b) => a.score_N - b.score_N);
   function drawTargets() {
