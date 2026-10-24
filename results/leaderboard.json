@@ -418,5 +418,19 @@
   "method": "Reservoir to 8 pattern metrics",
   "pattern": "100001100000001000101000000000000100101011100111100100001000100101100010010000011010000110000110100100011",
   "curve": "results/16/9/curve.json"
+ },
+ {
+  "issue": 19,
+  "batch_index": 0,
+  "user": "adamslab-gibert",
+  "name": "Pritam",
+  "target": "T1",
+  "score_N": 0.6656,
+  "stroke_error_mm": 7.97,
+  "max_displacement_mm": 25.77,
+  "tested_at": "2026-10-24T15:02:35Z",
+  "method": "Graph neural network",
+  "pattern": "110101100011100110001100101001100110101110111100111011000110000101100011010110010111001010010001001011011",
+  "curve": "results/19/0/curve.json"
  }
 ]
