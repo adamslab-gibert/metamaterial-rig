@@ -502,5 +502,19 @@
   "method": "Graph neural network",
   "pattern": "110111100111101111001100101001100110101110111110111010100110000100100011110111010101001000010000001101011",
   "curve": "results/19/5/curve.json"
+ },
+ {
+  "issue": 19,
+  "batch_index": 6,
+  "user": "adamslab-gibert",
+  "name": "Pritam",
+  "target": "T7",
+  "score_N": 0.9961,
+  "stroke_error_mm": 0.255,
+  "max_displacement_mm": 27.255,
+  "tested_at": "2026-10-24T15:32:14Z",
+  "method": "Graph neural network",
+  "pattern": "100101100011000110000100101000000110101010011100111010010110000100110011010100010000101010010000001111001",
+  "curve": "results/19/6/curve.json"
  }
 ]
