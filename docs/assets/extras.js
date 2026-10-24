@@ -241,7 +241,7 @@
         c.append(h("span", "lb-score", e.score_N.toFixed(3)));
         if (place >= 0) c.append(h("span", "lb-medal", ["1st", "2nd", "3rd"][place]));
         if (/^[01]{105}$/.test(e.pattern || "")) { const tb = t.pattern; c.append(h("span", "lb-miss", `${[...e.pattern].reduce((a, b, k) => a + (b !== tb[k] ? 1 : 0), 0)} cells off`)); }
-        if (place >= 0 && e.curve) {
+        if (e.curve) {
           const show = h("button", "lb-show", "Curve"); show.type = "button"; show.title = `Show this entry against target ${t.id}`;
           show.onclick = ev => { ev.stopPropagation(); selectTarget(t.id, e); $("challenge").scrollIntoView({ behavior: "smooth", block: "start" }); };
           c.append(show);
@@ -254,7 +254,7 @@
       body.appendChild(tr);
     });
     tb.appendChild(body); wrap.appendChild(tb);
-    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The ten best submissions are shown. The curve can be shown for the three best entries of each target."));
+    wrap.append(h("p", "fineprint", "One row per submission, so you can compare your own methods or trials. Scores are the RMS difference to the target in newtons. The overall score is the average of the submission's score on each target, so a submission is ranked once it covers all ten targets. The ten best submissions are shown. Curves of entries outside the three best for a target are kept for six weeks."));
   }
   const ranked = id => board.filter(e => e.target === id).sort((a, b) => a.score_N - b.score_N);
   function drawTargets() {
