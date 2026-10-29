@@ -992,5 +992,21 @@
   "method": "A CNN algorithm, updating the BCE logits to unweighted",
   "pattern": "111111111111111111000110000110001100001100011000011000110000110001100001100011000011000110000111111111111",
   "curve": "results/26/7/curve.json"
+ },
+ {
+  "issue": 26,
+  "batch_index": 8,
+  "user": "dschegster",
+  "name": "Devon S.",
+  "target": "T9",
+  "score_N": 3.3979,
+  "stroke_error_mm": -18.1,
+  "max_displacement_mm": 12.1,
+  "reached_20N": true,
+  "max_force_N": 20.0,
+  "tested_at": "2026-10-29T19:42:33Z",
+  "method": "A CNN algorithm, updating the BCE logits to unweighted",
+  "pattern": "111111111111000011000110000110001100001100011000011000110000110001100001100011000010000010000111111111111",
+  "curve": "results/26/8/curve.json"
  }
 ]
