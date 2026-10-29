@@ -1168,5 +1168,21 @@
   "method": "CNN plus BCE and regularization",
   "pattern": "001000000000000000000000100011110101101011101111110111011111011110101101001100011000000000000000000010100",
   "curve": "results/27/8/curve.json"
+ },
+ {
+  "issue": 27,
+  "batch_index": 9,
+  "user": "dschegster",
+  "name": "Devon S.",
+  "target": "T10",
+  "score_N": 1.2582,
+  "stroke_error_mm": -13.213,
+  "max_displacement_mm": 24.387,
+  "reached_20N": true,
+  "max_force_N": 20.0,
+  "tested_at": "2026-10-29T20:45:02Z",
+  "method": "CNN plus BCE and regularization",
+  "pattern": "001000000000000000000000110011110101101011101111110011010110011110101101001100011000000000000000000010100",
+  "curve": "results/27/9/curve.json"
  }
 ]
