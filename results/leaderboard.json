@@ -768,5 +768,21 @@
   "method": "A CNN algorithm. train/val/test sets were on specified index",
   "pattern": "111110111110111100110001110011110001110011110111100111001111011110001100001100000000110000101001111011111",
   "curve": "results/25/3/curve.json"
+ },
+ {
+  "issue": 25,
+  "batch_index": 4,
+  "user": "dschegster",
+  "name": "Devon S.",
+  "target": "T5",
+  "score_N": 1.6846,
+  "stroke_error_mm": -6.8,
+  "max_displacement_mm": 17.4,
+  "reached_20N": true,
+  "max_force_N": 19.96,
+  "tested_at": "2026-10-29T18:55:31Z",
+  "method": "A CNN algorithm. train/val/test sets were on specified index",
+  "pattern": "011110111110110100010000000001100001110011110111100111001111011110011100000100000000000001110011110011110",
+  "curve": "results/25/4/curve.json"
  }
 ]
