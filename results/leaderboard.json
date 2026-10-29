@@ -704,5 +704,21 @@
   "method": "A trained 1D CNN using a BCE loss function.",
   "pattern": "100000000000000000000000100001010101100011000111101111000000100101101110111100111010000000000000000110110",
   "curve": "results/21/9/curve.json"
+ },
+ {
+  "issue": 25,
+  "batch_index": 0,
+  "user": "dschegster",
+  "name": "Devon S.",
+  "target": "T1",
+  "score_N": 2.0148,
+  "stroke_error_mm": -3.639,
+  "max_displacement_mm": 14.161,
+  "reached_20N": true,
+  "max_force_N": 20.0,
+  "tested_at": "2026-10-29T18:46:08Z",
+  "method": "A CNN algorithm. train/val/test sets were on specified index",
+  "pattern": "111111111110111111111101110001110001110011100111100111001111011110001100000000000000110001111011111011110",
+  "curve": "results/25/0/curve.json"
  }
 ]
