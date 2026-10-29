@@ -1,0 +1,154 @@
+{
+ "accepting": true,
+ "note": "",
+ "updated": "2026-10-28T22:15:40.875Z",
+ "home": false,
+ "auto_fill": true,
+ "command": {
+  "id": "setup-1793225688828",
+  "action": "setup",
+  "at": "2026-10-28T22:14:48.828Z"
+ },
+ "maintenance": false,
+ "commands": [
+  {
+   "id": "setup-1792710759312",
+   "action": "setup",
+   "at": "2026-10-22T23:12:39.312Z"
+  },
+  {
+   "id": "setup-1792892517475",
+   "action": "setup",
+   "at": "2026-10-25T01:41:57.475Z"
+  },
+  {
+   "id": "setup-1793036688863",
+   "action": "setup",
+   "at": "2026-10-26T17:44:48.863Z"
+  },
+  {
+   "id": "setup-1793054067680",
+   "action": "setup",
+   "at": "2026-10-26T22:34:27.680Z"
+  },
+  {
+   "id": "connect-1793193109532",
+   "action": "connect",
+   "at": "2026-10-28T13:11:49.532Z",
+   "ender0": "COM4",
+   "ender1": "COM5",
+   "mark10": "COM3",
+   "home": false
+  },
+  {
+   "id": "connect-1793201592320",
+   "action": "connect",
+   "at": "2026-10-28T15:33:12.320Z",
+   "ender0": "COM3",
+   "ender1": "COM4",
+   "mark10": "COM6",
+   "home": false
+  },
+  {
+   "id": "homeaxis-1793201610477",
+   "action": "home_axis",
+   "at": "2026-10-28T15:33:30.477Z",
+   "ender": 1,
+   "axis": "X"
+  },
+  {
+   "id": "connect-1793201644701",
+   "action": "connect",
+   "at": "2026-10-28T15:34:04.701Z",
+   "ender0": "COM3",
+   "ender1": "COM4",
+   "mark10": "COM6",
+   "home": false
+  },
+  {
+   "id": "homeaxis-1793202608058",
+   "action": "home_axis",
+   "at": "2026-10-28T15:50:08.058Z",
+   "ender": 1,
+   "axis": "X"
+  },
+  {
+   "id": "homeaxis-1793202736866",
+   "action": "home_axis",
+   "at": "2026-10-28T15:52:16.866Z",
+   "ender": 0,
+   "axis": "Y"
+  },
+  {
+   "id": "homeaxis-1793202794146",
+   "action": "home_axis",
+   "at": "2026-10-28T15:53:14.146Z",
+   "ender": 0,
+   "axis": "X"
+  },
+  {
+   "id": "homeaxis-1793202806962",
+   "action": "home_axis",
+   "at": "2026-10-28T15:53:26.962Z",
+   "ender": 0,
+   "axis": "Y"
+  },
+  {
+   "id": "connect-1793225359718",
+   "action": "connect",
+   "at": "2026-10-28T22:09:19.718Z",
+   "ender0": "COM4",
+   "ender1": "COM5",
+   "mark10": "COM6",
+   "home": false
+  },
+  {
+   "id": "homeaxis-1793225397671",
+   "action": "home_axis",
+   "at": "2026-10-28T22:09:57.671Z",
+   "ender": 1,
+   "axis": "X"
+  },
+  {
+   "id": "homeaxis-1793225471996",
+   "action": "home_axis",
+   "at": "2026-10-28T22:11:11.996Z",
+   "ender": 1,
+   "axis": "Z"
+  },
+  {
+   "id": "homeaxis-1793225527064",
+   "action": "home_axis",
+   "at": "2026-10-28T22:12:07.064Z",
+   "ender": 0,
+   "axis": "X"
+  },
+  {
+   "id": "homeaxis-1793225560229",
+   "action": "home_axis",
+   "at": "2026-10-28T22:12:40.229Z",
+   "ender": 0,
+   "axis": "Y"
+  },
+  {
+   "id": "homeaxis-1793225583246",
+   "action": "home_axis",
+   "at": "2026-10-28T22:13:03.246Z",
+   "ender": 0,
+   "axis": "Z"
+  },
+  {
+   "id": "homeaxis-1793225648898",
+   "action": "home_axis",
+   "at": "2026-10-28T22:14:08.898Z",
+   "ender": 0,
+   "axis": "Y"
+  },
+  {
+   "id": "setup-1793225688828",
+   "action": "setup",
+   "at": "2026-10-28T22:14:48.828Z"
+  }
+ ],
+ "auto_resume": true
+}

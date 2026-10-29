@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <meta name="robots" content="noindex">
+  <title>Admin · Metamaterial Test Rig</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css?v=202610271851">
+  <script src="assets/config.js?v=202610271851"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">ADAMS (Advanced Dynamics and MechanicS Lab)</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html">Challenge</a>
+          <a href="admin.html" aria-current="page" class="nav-admin">Admin</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Admin</h1>
+      <p class="lede lede-wide" id="admin-lede">For lab members: manage the queue, pause the rig, tidy the leaderboard and block accounts.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <!-- login -->
+    <section class="wrap admin-card" id="admin-login" hidden>
+      <h2>Log in</h2>
+      <p class="section-note">This page is for lab members. Everyone else can use the rest of the site without logging in.</p>
+      <form id="login-form" class="admin-form">
+        <label for="login-pw">Admin password</label>
+        <input id="login-pw" type="password" autocomplete="current-password" required>
+        <button type="submit" class="submit">Log in</button>
+        <p class="admin-msg" id="login-msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <!-- first-time setup / replacing the admin key -->
+    <section class="wrap admin-card" id="admin-setup" hidden>
+      <h2 id="setup-title">Set up the admin login</h2>
+      <p class="section-note">The admin login unlocks a GitHub key that is allowed to change requests and files in the repository. This form encrypts that key with your password and saves it to the site. Your password is not saved anywhere, so it can't be recovered: if you forget it, set up the login again with a new key.</p>
+      <ol class="steps admin-steps">
+        <li>Create a GitHub key for the website: <a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">new fine-grained token</a>. Name it <em>rig website admin</em>; Resource owner <strong>adamslab-gibert</strong>, <strong>Only select repositories</strong> → metamaterial-rig, and Repository permissions: <strong>Contents</strong> and <strong>Issues</strong> → <em>Read and write</em>. Generate it and copy it.</li>
+        <li>Paste it below, choose the admin password and click <strong>Save admin login</strong>. Paste the key only here, nowhere else.</li>
+      </ol>
+      <form id="setup-form" class="admin-form">
+        <label for="setup-token">GitHub key (starts with <code>github_pat_</code>)</label>
+        <input id="setup-token" type="password" autocomplete="off" spellcheck="false" required>
+        <label for="setup-pw">Admin password</label>
+        <input id="setup-pw" type="password" autocomplete="new-password" required>
+        <label for="setup-pw2">Admin password again</label>
+        <input id="setup-pw2" type="password" autocomplete="new-password" required>
+        <button type="submit" class="submit">Save admin login</button>
+        <p class="admin-msg" id="setup-msg" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+
+    <div id="admin-app" hidden>
+      <p class="wrap admin-toast" id="admin-toast" role="status" aria-live="polite"></p>
+
+      <section class="wrap block first-block" aria-labelledby="a-rig">
+        <div class="queue-head"><h2 id="a-rig">Rig</h2><p class="queue-sum" id="a-rig-sum"></p></div>
+        <div class="admin-rig">
+          <div class="admin-left">
+            <div class="status" id="status" data-state="loading">
+              <span class="lamp" aria-hidden="true"></span>
+              <div><p class="status-title" id="status-title">Checking…</p><p class="status-detail" id="status-detail"></p></div>
+            </div>
+            <div class="live admin-live" id="admin-live"></div>
+            <div class="admin-notes">
+            <p class="fineprint admin-note">These reach the rig computer within about 30 seconds (Start rig.bat must be running there). <strong>Connect &amp; home</strong> connects both Enders and the Mark-10 on the ports used last time, loads the corner coordinates and homes. Make sure nobody is working at the rig before moving it from here.</p>
+            <p class="fineprint admin-note"><strong>Halt now:</strong> the rig stops where it is, with the tool lifted clear, and the test is marked failed. Use maintenance mode to free the rig if needed, then <strong>Home now</strong>. The next pattern is built from scratch.</p>
+            <p class="fineprint admin-note"><strong>Emergency stop:</strong> both Enders stop at once, mid-move. To restart, you need to power-cycle the Enders (switch them off and on), then <strong>Connect &amp; home</strong>. In a real emergency, switch off the power at the rig: these buttons take 20–30 s to arrive.</p>
+            </div>
+          </div>
+          <form class="admin-form admin-pause" id="pause-form">
+            <p class="admin-line" id="ctl-now">Web jobs: …</p>
+            <label for="pause-note">Note shown to visitors while paused (optional)</label>
+            <input id="pause-note" type="text" maxlength="200" placeholder="e.g. Refilling inserts, back after 3 pm">
+            <div class="admin-row">
+              <button type="button" class="submit" id="btn-pause">Pause web jobs</button>
+              <button type="button" class="admin-btn" id="btn-stop">Stop after this test and home</button>
+              <button type="button" class="admin-btn" id="btn-resume">Resume web jobs</button>
+            </div>
+            <p class="fineprint">The lab computer picks this up within about 20 seconds. A test that is already running always finishes. A batch continues where it stopped after Resume. <strong>Stop after this test and home</strong> also homes both Enders once the test is done. To stop in the middle of a test, use <strong>Halt now</strong> below.</p>
+            <h3 class="admin-sub">Rig computer</h3>
+            <div class="admin-row">
+              <button type="button" class="admin-btn" data-cmd="start_program">Start rig program</button>
+              <button type="button" class="admin-btn" data-cmd="restart_program">Restart rig program</button>
+              <button type="button" class="admin-btn" data-cmd="stop_program">Close rig program</button>
+            </div>
+            <div class="admin-row">
+              <button type="button" class="admin-btn" data-cmd="setup">Connect &amp; home</button>
+              <button type="button" class="admin-btn" data-cmd="home">Home now</button>
+              <button type="button" class="admin-btn danger" data-cmd="halt">Halt now</button>
+              <button type="button" class="submit estop" data-cmd="estop">Emergency stop</button>
+            </div>
+            <h3 class="admin-sub">Ports and connections</h3>
+            <p class="admin-line" id="ports-now">Ports: …</p>
+            <div class="admin-row move-row">
+              <label>Ender 0 <select id="pt-e0"></select></label>
+              <label>Ender 1 <select id="pt-e1"></select></label>
+              <label>Mark-10 <select id="pt-lc"></select></label>
+            </div>
+            <div class="admin-row">
+              <button type="button" class="admin-btn" id="btn-ports">Refresh the port list</button>
+              <button type="button" class="admin-btn" id="btn-connect">Connect on these ports</button>
+              <button type="button" class="admin-btn" id="btn-connect-home">Connect and home</button>
+            </div>
+            <p class="fineprint">The list comes from the rig computer and refreshes with the rest of this page. Use this after a device has been unplugged or has changed its COM number. <strong>Connect on these ports</strong> opens the three devices and loads the corner coordinates, without moving anything. <strong>Connect and home</strong> does the same and then homes both Enders. The chosen ports are remembered, so <strong>Connect &amp; home</strong> above works afterwards.</p>
+            <h3 class="admin-sub">Home one axis</h3>
+            <div class="admin-row move-row">
+              <label>Ender <select id="hm-ender"><option value="0">0</option><option value="1">1</option></select></label>
+              <label>Axis <select id="hm-axis"><option>X</option><option>Y</option><option>Z</option></select></label>
+              <button type="button" class="admin-btn" id="btn-home-axis">Home this axis</button>
+            </div>
+            <p class="fineprint">Homes one axis, only while no test is running (Ender 1 has no Y). Ender 0's tool is lifted to its safe height first. It reaches the rig within about 30 seconds.</p>
+            <h3 class="admin-sub">Maintenance mode</h3>
+            <p class="admin-line" id="maint-now">Maintenance mode: …</p>
+            <div class="admin-row"><button type="button" class="admin-btn" id="btn-maint">Turn maintenance mode on</button></div>
+            <div id="maint-tools" hidden>
+            <h3 class="admin-sub">Move one axis</h3>
+            <p class="admin-line" id="pos-now">Positions: …</p>
+            <div class="admin-row move-row">
+              <label>Ender <select id="mv-ender"><option value="0">0</option><option value="1">1</option></select></label>
+              <label>Axis <select id="mv-axis"><option>X</option><option>Y</option><option>Z</option></select></label>
+              <label>Step <select id="mv-step"><option>0.1</option><option>1</option><option selected>5</option><option>10</option><option>50</option></select> mm</label>
+              <button type="button" class="admin-btn" id="mv-minus">− Move</button>
+              <button type="button" class="admin-btn" id="mv-plus">+ Move</button>
+            </div>
+            <p class="fineprint">One move per click, at 1000 mm/min, only while no test is running (Ender 1 has no Y). It reaches the rig within about 30 s, and the positions above update about a minute later. Watch the live view.</p>
+            </div>
+            <p class="admin-line" id="auto-now"><span class="dot" aria-hidden="true"></span>Automatic testing: …</p>
+            <div class="admin-row"><button type="button" class="admin-btn" id="btn-auto">Turn automatic testing off</button></div>
+          </form>
+        </div>
+      </section>
+
+      <section class="wrap block" aria-labelledby="a-queue">
+        <div class="queue-head"><h2 id="a-queue">Requests</h2><p class="queue-sum" id="a-queue-sum"></p></div>
+        <p class="section-note note-wide"><strong>Move to front</strong> puts a request ahead of the others. <strong>Remove</strong> closes it, and the person who sent it gets a comment. A running test can be stopped with <strong>Halt now</strong> in the Rig section above.</p>
+        <div class="queue-wrap">
+          <table class="queue admin-table">
+            <thead><tr><th scope="col">Request</th><th scope="col">Patterns</th><th scope="col">Status</th><th scope="col">Submitted</th><th scope="col">Actions</th></tr></thead>
+            <tbody id="a-queue-body"><tr><td colspan="5" class="empty-note">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wrap block" aria-labelledby="a-lb">
+        <div class="queue-head"><h2 id="a-lb">Leaderboard</h2><p class="queue-sum" id="a-lb-sum"></p></div>
+        <p class="section-note note-wide">One row per submission, as on the Challenge page. <strong>Edit</strong> changes the name or the method shown for that submission. <strong>Remove</strong> takes the whole submission off the leaderboard. The test results themselves stay in the results folder.</p>
+        <div class="queue-wrap">
+          <table class="queue admin-table">
+            <thead><tr><th scope="col">Submission</th><th scope="col">Targets</th><th scope="col">Overall</th><th scope="col">Method</th><th scope="col">Actions</th></tr></thead>
+            <tbody id="a-lb-body"><tr><td colspan="5" class="empty-note">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="wrap block" aria-labelledby="a-block">
+        <h2 id="a-block">Blocked accounts</h2>
+        <p class="section-note">New requests from a blocked GitHub account are closed automatically, and the rig skips any of its requests still waiting.</p>
+        <form class="admin-form admin-inline" id="block-form">
+          <label for="block-user">GitHub user name</label>
+          <input id="block-user" type="text" autocomplete="off" spellcheck="false" required pattern="[A-Za-z0-9-]{1,39}">
+          <label class="admin-check"><input type="checkbox" id="block-close" checked> Also remove their waiting requests</label>
+          <button type="submit" class="submit">Block</button>
+        </form>
+        <ul class="admin-list" id="a-blocked"><li class="empty-note">Loading…</li></ul>
+      </section>
+
+      <section class="wrap block" aria-labelledby="a-login">
+        <h2 id="a-login">Admin login</h2>
+        <form class="admin-form" id="pw-form">
+          <label for="pw-new">New admin password</label>
+          <input id="pw-new" type="password" autocomplete="new-password" required>
+          <label for="pw-new2">New admin password again</label>
+          <input id="pw-new2" type="password" autocomplete="new-password" required>
+          <div class="admin-row">
+            <button type="submit" class="admin-btn">Change password</button>
+            <button type="button" class="admin-btn" id="btn-replace">Replace the GitHub key</button>
+            <button type="button" class="submit" id="btn-logout">Log out (back to the normal view)</button>
+          </div>
+          <p class="admin-msg" id="pw-msg" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+    </div>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">ADAMS (Advanced Dynamics and MechanicS Lab)</span>, Purdue University. Source and results: <a id="repo-link" href="#">GitHub repository</a>.</p>
+      <p class="foot-legal">© 2026 ADAMS Lab, Purdue University. Website and code: all rights reserved. Measured data are published under <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>.</p>
+    </div>
+  </footer>
+
+  <script src="assets/admin-gate.js?v=202610271851"></script>
+  <script src="assets/app.js?v=202610271851"></script>
+  <script src="assets/admin.js?v=202610271851"></script>
+</body>
+</html>

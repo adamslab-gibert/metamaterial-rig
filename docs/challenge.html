@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Challenge · Metamaterial Test Rig</title>
+  <meta name="description" content="Inverse-design benchmark: find a metamaterial pattern that reproduces a target force curve. Entries are tested on the real rig and ranked on a public leaderboard.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css?v=202610271851">
+  <script src="assets/config.js?v=202610271851"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">ADAMS (Advanced Dynamics and MechanicS Lab)</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html" aria-current="page">Challenge</a>
+          <a href="admin.html" class="nav-admin">Admin</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Inverse Design Challenge</h1>
+      <p class="lede lede-wide">Here are ten force curves measured on this rig, each with the pattern that produced it. Your task is to find a different pattern that reproduces one of these curves. Many patterns give very similar curves, so there is no single right answer. You can design your pattern in the editor or with your own code. The rig then tests it and your score goes on the leaderboard.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="wrap first" id="challenge" aria-labelledby="challenge-title">
+      <h2 id="challenge-title" class="visually-hidden">Targets and leaderboard</h2>
+      <p class="section-note note-wide">Each target below is a measured force curve. Its pattern is shown next to the chart but is not in the data set, and an entry that simply copies it is refused. When you submit an entry, the rig tests it and scores it by how closely its curve matches the target. The score is the root-mean-square (RMS) difference between the two curves in newtons. The difference in displacement at 20 N and the number of cells that differ from the target's pattern are shown alongside.</p>
+      <div class="targets" id="targets" role="tablist" aria-label="Challenge targets"></div>
+      <div class="target-view" id="target-view"></div>
+    </section>
+
+    <section class="wrap block" id="leaderboard" aria-labelledby="lb-title">
+      <h2 id="lb-title">Leaderboard</h2>
+      <p class="section-note note-wide">Submit an entry to see yourself on the leaderboard.</p>
+      <div class="lb-wrap" id="lb-all"><p class="empty-note">Loading…</p></div>
+    </section>
+
+    <section class="wrap block" id="split" aria-labelledby="split-title">
+      <h2 id="split-title">Standard Data Split</h2>
+      <p class="section-note note-wide">To make entries comparable, please train and evaluate on the same data. The benchmark set is the first <strong id="split-rows">20,000</strong> runs of the data set that follow the island algorithm. They are divided once, by a fixed random shuffle, into <strong id="split-train">15,000</strong> training rows, <strong id="split-val">2,500</strong> validation rows and <strong id="split-test">2,500</strong> test rows. Download the three index files and use them as they are. Train only on the training rows, use the validation rows to tune your model, and report your accuracy on the test rows. Runs with random insert placement are in the full data set but not in the benchmark. The ten challenge targets are separate: their patterns are in none of these sets.</p>
+      <div class="ch-grid">
+        <div class="ch-step">
+          <h3>Download the Split</h3>
+          <p>A zip with three text files, one row number per line. The row numbers are those of the data set download (<code>codeData.npy</code>, <code>dataData.npy</code>, <code>maxData.npy</code>).</p>
+          <ul class="ch-files">
+            <li><code>train.txt</code>: training rows</li>
+            <li><code>validation.txt</code>: validation rows, for tuning</li>
+            <li><code>test.txt</code>: test rows, for reporting</li>
+            <li><code>other_patterns.txt</code>: rows with random insert placement, not part of the benchmark</li>
+            <li><code>README.txt</code>: the rules and how the split is made</li>
+          </ul>
+          <button type="button" class="submit" id="split-download">Download the split (.zip)</button>
+          <p class="fineprint" id="split-note">The same files are inside the data set download, in its <code>split</code> folder.</p>
+        </div>
+        <div class="ch-step">
+          <h3>How the Split Grows</h3>
+          <p>The data set grows with every test, so the benchmark grows in steps of 10,000 island-algorithm runs. Each block of 10,000 is shuffled once with a fixed seed and divided into 7,500 training, 1,250 validation and 1,250 test rows. Benchmark 20k uses the first two blocks, Benchmark 30k will use the first three, and so on.</p>
+          <p>A row's role never changes when the benchmark grows, so a test row of Benchmark 20k is still a test row in every later version. State the benchmark version you used (for example "Benchmark 20k") with your method.</p>
+          <p class="fineprint">Loading it in Python: <code>train = np.loadtxt("train.txt", dtype=int)</code>, then <code>codeData[train]</code>, <code>dataData[train]</code> and <code>maxData[train]</code>.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap block" id="upload" aria-labelledby="upload-title">
+      <h2 id="upload-title">Work Offline: Download the Targets, Upload Your Entries</h2>
+      <p class="section-note note-wide">For your own algorithms: download all ten target curves, design patterns on your computer, then upload them as a zip. Each pattern is tested on the rig and scored against its target, just like an entry made in the editor.</p>
+      <div class="ch-grid">
+        <div class="ch-step">
+          <p class="kicker">Step 1</p>
+          <h3>Download the Target Curves</h3>
+          <p>A zip with the ten targets in the same format as the data set:</p>
+          <ul class="ch-files">
+            <li><code>targets_dataData.npy</code>: 10 × 200 force curves, stored as 2F/20&nbsp;N − 1</li>
+            <li><code>targets_maxData.npy</code>: displacement at 20&nbsp;N, mm</li>
+            <li><code>targets.csv</code>: which row is which target</li>
+            <li><code>targets_curves.csv</code>: the same curves as displacement (mm) and force (N)</li>
+            <li><code>targets_patterns.txt</code>: the pattern of each target</li>
+            <li><code>README.txt</code>: formats, scoring and how to submit</li>
+          </ul>
+          <button type="button" class="submit" id="ch-download">Download the target curves (.zip)</button>
+          <p class="fineprint" id="ch-download-note"></p>
+        </div>
+        <div class="ch-step">
+          <p class="kicker">Step 2</p>
+          <h3>Upload Your Entries</h3>
+          <p>One <strong>.zip</strong> with two text files, <strong>at most one pattern per target</strong> (up to 10):</p>
+          <dl class="batch-files">
+            <dt><code>patterns</code> <span>(or patterns.txt)</span></dt>
+            <dd>One pattern per line: 105 digits of 0 and 1, bottom row first, 1 = insert.</dd>
+            <dt><code>targets</code> <span>(or targets.txt)</span></dt>
+            <dd>One target per line (T1 … T10), in the same order as <code>patterns</code>.</dd>
+          </dl>
+          <p><a href="assets/example_challenge.zip" download>Download an example zip</a> (entries for T1 and T2).</p>
+          <label class="cb-label" for="ch-name">Your name (required, shown on the leaderboard)</label>
+          <input id="ch-name" class="ch-name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Jane Smith (Purdue ME)">
+          <label class="cb-label" for="ch-method">Your method (required, at least 20 characters, shown on the leaderboard)</label>
+          <textarea id="ch-method" rows="3" maxlength="1500" placeholder="e.g. A CNN trained on Benchmark 20k (standard split), a random guess, the nearest curve in the data set, or designed by hand."></textarea>
+          <div class="drop" id="ch-drop">
+            <input type="file" id="ch-zip" accept=".zip,application/zip" class="visually-hidden">
+            <label for="ch-zip" class="drop-button">Choose a zip file</label>
+            <span class="drop-hint">or drop it here</span>
+          </div>
+          <p class="fineprint">The zip is checked here in your browser. Nothing is sent until you press submit.</p>
+        </div>
+      </div>
+      <div class="check" id="ch-check" aria-live="polite" hidden></div>
+    </section>
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">ADAMS (Advanced Dynamics and MechanicS Lab)</span>, Purdue University. Source and results: <a id="repo-link" href="#">GitHub repository</a>.</p>
+      <p class="foot-legal">© 2026 ADAMS Lab, Purdue University. Website and code: all rights reserved. Measured data are published under <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>.</p>
+    </div>
+  </footer>
+
+  <script src="assets/jszip.min.js?v=202610271851"></script>
+  <script src="assets/island.js?v=202610271851"></script>
+  <script src="assets/admin-gate.js?v=202610271851"></script>
+  <script src="assets/app.js?v=202610271851"></script>
+  <script src="assets/extras.js?v=202610271851"></script>
+</body>
+</html>

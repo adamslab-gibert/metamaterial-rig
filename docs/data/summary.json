@@ -1,0 +1,29 @@
+{
+ "runs": 23317,
+ "island": 20219,
+ "other": 3098,
+ "built": "2026-10-22",
+ "sets": [
+  {
+   "files": [
+    "codeData_final.npy",
+    "dataData_final.npy",
+    "maxData_final.npy"
+   ],
+   "rows_in_files": 20813,
+   "runs_added": 20813,
+   "description": "Final data set: original rig runs generated with the island algorithm (exact repeats removed) plus later rig runs."
+  },
+  {
+   "files": [
+    "codeData.npy",
+    "dataData.npy",
+    "maxData.npy"
+   ],
+   "rows_in_files": 23915,
+   "runs_added": 2514,
+   "description": "Original 23,915 rig runs; only patterns not already in the final set were added: an early batch of 2,514 patterns that were not generated with the island algorithm."
+  }
+ ],
+ "held_out_targets": 10
+}

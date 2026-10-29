@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="color-scheme" content="light">
+  <title>Submit Patterns · Metamaterial Test Rig</title>
+  <meta name="description" content="Design an insert pattern on the lattice or upload a zip of up to 100 patterns, and queue them on the metamaterial test rig.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/style.css?v=202610271851">
+  <script src="assets/config.js?v=202610271851"></script>
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the content</a>
+
+  <header class="site-head">
+    <div class="wrap">
+      <div class="topbar">
+        <a class="brand" href="index.html"><span class="lab" id="lab-name">ADAMS (Advanced Dynamics and MechanicS Lab)</span><span class="brand-name">Metamaterial test rig</span></a>
+        <nav class="site-nav" aria-label="Pages">
+          <a href="index.html">Rig</a>
+          <a href="submit.html" aria-current="page">Submit</a>
+          <a href="data.html">Data</a>
+          <a href="challenge.html">Challenge</a>
+          <a href="admin.html" class="nav-admin">Admin</a>
+        </nav>
+        <a class="rig-pill" id="rig-pill" href="index.html" data-state="loading"><span class="lamp" aria-hidden="true"></span><span id="rig-pill-text">Rig: checking…</span></a>
+      </div>
+      <h1>Submit patterns</h1>
+      <p class="lede lede-wide">Choose which cells get a rigid insert. The rig builds and tests your patterns one at a time when it is online.</p>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="wrap submit-intro">
+      <div class="who">
+        <label for="your-name">Your name <span class="req" aria-hidden="true">*</span><span class="visually-hidden">(required)</span></label>
+        <input id="your-name" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Jane Smith (Purdue ME)" required aria-required="true" aria-describedby="name-msg">
+        <p class="name-msg" id="name-msg" role="alert" hidden>Please enter your name before submitting.</p>
+      </div>
+      <nav class="ways" aria-label="Ways to submit">
+        <a href="#single"><span>Option 1</span>Design one pattern by hand</a>
+        <a href="#batch"><span>Option 2</span>Upload a zip of up to 100 patterns</a>
+      </nav>
+      <p class="section-note note-wide">Follow your request on the <a href="index.html">Rig page</a>. Please remember your request number from the queue there, because you will need it to download your results later.</p>
+    </div>
+    <section class="wrap option first" id="single" aria-labelledby="single-title">
+      <header class="option-head">
+        <p class="kicker">Option 1</p>
+        <h2 id="single-title">Design one pattern</h2>
+      </header>
+      <div class="bench">
+        <div class="specimen">
+          <p class="hint hint-top">Click a cell to add or remove an insert, or drag across cells to paint.</p>
+          <svg id="editor" class="lattice" role="group" aria-label="Pattern editor: 19 rows of cells. Select a cell to add or remove an insert." viewBox="-1.55 -2 13.1 22"></svg>
+        </div>
+        <div class="panel">
+          <div class="challenge-banner" id="challenge-banner" hidden></div>
+          <dl class="readout">
+            <div><dt>Inserts</dt><dd id="count">0</dd></div>
+            <div><dt>Empty cells</dt><dd id="empty">105</dd></div>
+            <div><dt>Island algorithm</dt><dd id="island-now">–</dd></div>
+          </dl>
+          <div class="tools">
+            <button type="button" id="btn-clear">Clear</button>
+            <button type="button" id="btn-random" title="Follows the island algorithm and is not in the data set">Random island pattern</button>
+            <button type="button" id="btn-random-any" title="Any arrangement, not in the data set">Random, any pattern</button>
+            <button type="button" id="btn-invert">Invert</button>
+          </div>
+          <label class="code-label" for="code">Pattern code <span>105 digits, bottom row first, 1 = insert</span></label>
+          <textarea id="code" rows="3" spellcheck="false" autocomplete="off"></textarea>
+          <p class="code-msg" id="code-msg" role="status"></p>
+          <a class="submit" id="submit" href="#" target="_blank" rel="noopener">Submit this pattern to the queue</a>
+          <p class="send-msg" id="submit-msg" role="status" hidden></p>
+          <p class="fineprint" id="submit-note">Submitting opens a pre-filled request on GitHub, so you need a free GitHub account. Results are posted on the request and published openly.</p>
+          <p class="fineprint" id="submit-gh-line" hidden><a id="submit-gh" href="#" target="_blank" rel="noopener">Submit through GitHub instead</a></p>
+        </div>
+      </div>
+    </section>
+
+    <section class="wrap option" id="batch" aria-labelledby="batch-title">
+      <header class="option-head">
+        <p class="kicker">Option 2</p>
+        <h2 id="batch-title">Upload a batch of patterns</h2>
+      </header>
+      <div class="batch-grid">
+        <div class="batch-help">
+          <h3>What to upload</h3>
+          <p>One <strong>.zip</strong> file with a text file called <code>patterns</code> (or <code>patterns.txt</code>) inside, for <strong>up to 100 patterns</strong>. The file holds one pattern per line: 105 digits of 0 and 1, bottom row first, left to right, 1 = insert. The patterns are tested in the order they are listed.</p>
+          <p class="batch-example-title">Example: the first lines of the file</p>
+          <pre class="batch-example"><span>patterns</span>
+111111111111111111111100111100111110111110…
+111110111101111011110110101100011010111110…</pre>
+          <p><a href="assets/example_batch.zip" download>Download an example zip</a> (5 patterns) to use as a template.</p>
+        </div>
+        <div class="batch-upload">
+          <div class="drop" id="drop">
+            <input type="file" id="zip-input" accept=".zip,application/zip" class="visually-hidden">
+            <label for="zip-input" class="drop-button">Choose a zip file</label>
+            <span class="drop-hint">or drop it here</span>
+          </div>
+          <p class="fineprint">The zip is checked here in your browser. Nothing is sent until you press submit.</p>
+        </div>
+      </div>
+      <div class="check" id="check" aria-live="polite" hidden></div>
+    </section>
+
+  </main>
+
+  <footer class="site-foot">
+    <div class="wrap">
+      <p>Run by <span id="lab-name-foot">ADAMS (Advanced Dynamics and MechanicS Lab)</span>, Purdue University. Source and results: <a id="repo-link" href="#">GitHub repository</a>.</p>
+      <p class="foot-legal">© 2026 ADAMS Lab, Purdue University. Website and code: all rights reserved. Measured data are published under <a href="https://creativecommons.org/licenses/by/4.0/" rel="license">CC BY 4.0</a>.</p>
+    </div>
+  </footer>
+
+  <script src="assets/jszip.min.js?v=202610271851"></script>
+  <script src="assets/island.js?v=202610271851"></script>
+  <script src="assets/admin-gate.js?v=202610271851"></script>
+  <script src="assets/app.js?v=202610271851"></script>
+  <script src="assets/extras.js?v=202610271851"></script>
+</body>
+</html>
