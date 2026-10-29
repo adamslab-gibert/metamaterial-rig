@@ -864,5 +864,21 @@
   "method": "A CNN algorithm. train/val/test sets were on specified index",
   "pattern": "101000000000000000000000100011110101111011100111100011010111001110011101011100011000000000000000000011011",
   "curve": "results/25/9/curve.json"
+ },
+ {
+  "issue": 26,
+  "batch_index": 0,
+  "user": "dschegster",
+  "name": "Devon S.",
+  "target": "T1",
+  "score_N": 3.7664,
+  "stroke_error_mm": -5.867,
+  "max_displacement_mm": 11.933,
+  "reached_20N": true,
+  "max_force_N": 20.0,
+  "tested_at": "2026-10-29T19:24:26Z",
+  "method": "A CNN algorithm, updating the BCE logits to unweighted",
+  "pattern": "111111111111111111111111011110001100001100011110011001111111110111100001000001000011000111111111111111111",
+  "curve": "results/26/0/curve.json"
  }
 ]
