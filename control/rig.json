@@ -1,9 +1,9 @@
 {
  "accepting": true,
  "note": "",
- "updated": "2026-10-31T14:27:44.189Z",
+ "updated": "2026-10-31T14:54:48.567Z",
  "home": false,
- "auto_fill": false,
+ "auto_fill": true,
  "command": {
   "id": "estop-1793408813237",
   "action": "estop",
