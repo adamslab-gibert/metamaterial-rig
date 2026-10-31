@@ -1,25 +1,18 @@
 {
  "accepting": false,
  "note": "Maintenance in progress.",
- "updated": "2026-10-31T18:11:38.240Z",
+ "updated": "2026-10-31T18:14:20.705Z",
  "home": false,
  "auto_fill": false,
  "command": {
-  "id": "connect-1793470298043",
-  "action": "connect",
-  "at": "2026-10-31T18:11:38.043Z",
-  "mark10": "COM6",
-  "home": false
+  "id": "homeaxis-1793470460472",
+  "action": "home_axis",
+  "at": "2026-10-31T18:14:20.472Z",
+  "ender": 0,
+  "axis": "X"
  },
  "maintenance": true,
  "commands": [
-  {
-   "id": "homeaxis-1793462623019",
-   "action": "home_axis",
-   "at": "2026-10-31T16:03:43.019Z",
-   "ender": 0,
-   "axis": "X"
-  },
   {
    "id": "connect-1793462829957",
    "action": "connect",
@@ -160,6 +153,13 @@
    "at": "2026-10-31T18:11:38.043Z",
    "mark10": "COM6",
    "home": false
+  },
+  {
+   "id": "homeaxis-1793470460472",
+   "action": "home_axis",
+   "at": "2026-10-31T18:14:20.472Z",
+   "ender": 0,
+   "axis": "X"
   }
  ],
  "auto_resume": true
