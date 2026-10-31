@@ -1,21 +1,16 @@
 {
  "accepting": false,
  "note": "Stopped by the lab.",
- "updated": "2026-10-31T01:06:36.774Z",
- "home": true,
+ "updated": "2026-10-31T01:06:53.456Z",
+ "home": false,
  "auto_fill": true,
  "command": {
-  "id": "setup-1793225688828",
-  "action": "setup",
-  "at": "2026-10-28T22:14:48.828Z"
+  "id": "estop-1793408813237",
+  "action": "estop",
+  "at": "2026-10-31T01:06:53.237Z"
  },
  "maintenance": false,
  "commands": [
-  {
-   "id": "setup-1792710759312",
-   "action": "setup",
-   "at": "2026-10-22T23:12:39.312Z"
-  },
   {
    "id": "setup-1792892517475",
    "action": "setup",
@@ -148,6 +143,11 @@
    "id": "setup-1793225688828",
    "action": "setup",
    "at": "2026-10-28T22:14:48.828Z"
+  },
+  {
+   "id": "estop-1793408813237",
+   "action": "estop",
+   "at": "2026-10-31T01:06:53.237Z"
   }
  ],
  "auto_resume": true
