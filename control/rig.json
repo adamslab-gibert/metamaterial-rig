@@ -1,9 +1,9 @@
 {
- "accepting": true,
- "note": "",
- "updated": "2026-10-31T16:02:35.805Z",
+ "accepting": false,
+ "note": "Maintenance in progress.",
+ "updated": "2026-10-31T16:03:06.941Z",
  "home": false,
- "auto_fill": true,
+ "auto_fill": false,
  "command": {
   "id": "connect-1793462555587",
   "action": "connect",
@@ -13,7 +13,7 @@
   "mark10": "COM6",
   "home": false
  },
- "maintenance": false,
+ "maintenance": true,
  "commands": [
   {
    "id": "setup-1793054067680",
