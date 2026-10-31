@@ -1,23 +1,18 @@
 {
  "accepting": false,
  "note": "Maintenance in progress.",
- "updated": "2026-10-31T18:05:26.908Z",
+ "updated": "2026-10-31T18:06:03.715Z",
  "home": false,
  "auto_fill": false,
  "command": {
-  "id": "connect-1793469926699",
+  "id": "connect-1793469963533",
   "action": "connect",
-  "at": "2026-10-31T18:05:26.699Z",
-  "ender0": "COM4",
+  "at": "2026-10-31T18:06:03.533Z",
+  "ender1": "COM5",
   "home": false
  },
  "maintenance": true,
  "commands": [
-  {
-   "id": "estop-1793408813237",
-   "action": "estop",
-   "at": "2026-10-31T01:06:53.237Z"
-  },
   {
    "id": "homeaxis-1793462401554",
    "action": "home_axis",
@@ -159,6 +154,13 @@
    "action": "connect",
    "at": "2026-10-31T18:05:26.699Z",
    "ender0": "COM4",
+   "home": false
+  },
+  {
+   "id": "connect-1793469963533",
+   "action": "connect",
+   "at": "2026-10-31T18:06:03.533Z",
+   "ender1": "COM5",
    "home": false
   }
  ],
