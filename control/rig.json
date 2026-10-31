@@ -1,8 +1,8 @@
 {
- "accepting": true,
- "note": "",
- "updated": "2026-10-28T22:15:40.875Z",
- "home": false,
+ "accepting": false,
+ "note": "Stopped by the lab.",
+ "updated": "2026-10-31T01:06:36.774Z",
+ "home": true,
  "auto_fill": true,
  "command": {
   "id": "setup-1793225688828",
