@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=202610271851">
-  <script src="assets/config.js?v=202610271851"></script>
+  <link rel="stylesheet" href="assets/style.css?v=202610310607">
+  <script src="assets/config.js?v=202610310607"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to the content</a>
@@ -106,6 +106,10 @@
               <button type="button" class="admin-btn danger" data-cmd="halt">Halt now</button>
               <button type="button" class="submit estop" data-cmd="estop">Emergency stop</button>
             </div>
+            <div class="admin-row">
+              <button type="button" class="admin-btn" data-cmd="fill">Fill all cells</button>
+            </div>
+            <p class="fineprint">Places an insert in every one of the 105 cells and remembers the lattice as full. It takes a long time and the machine moves throughout, so watch the live view. Use it after a misalignment, or whenever the lattice and the stored pattern may have drifted apart.</p>
             <h3 class="admin-sub">Ports and connections</h3>
             <p class="admin-line" id="ports-now">Ports: …</p>
             <div class="admin-row move-row">
@@ -126,6 +130,14 @@
               <button type="button" class="admin-btn" id="btn-home-axis">Home this axis</button>
             </div>
             <p class="fineprint">Homes one axis, only while no test is running (Ender 1 has no Y). Ender 0's tool is lifted to its safe height first. It reaches the rig within about 30 seconds.</p>
+            <h3 class="admin-sub">Resting the specimen</h3>
+            <p class="admin-line" id="rest-now">Rest: …</p>
+            <div class="admin-row move-row">
+              <label>Rest after <input type="number" id="rest-every" min="0" max="1000" step="10" class="rest-in"> tests</label>
+              <label>for <input type="number" id="rest-minutes" min="0" max="240" step="5" class="rest-in"> minutes</label>
+              <button type="button" class="admin-btn" id="btn-rest">Save</button>
+            </div>
+            <p class="fineprint">The silicone recovers between tests, so the rig stops for a while after a run of them. While it rests the website says so and the countdown looks after itself; a request that arrives meanwhile keeps its place and starts when the rest ends. Set the number of tests to 0 to switch resting off.</p>
             <h3 class="admin-sub">Maintenance mode</h3>
             <p class="admin-line" id="maint-now">Maintenance mode: …</p>
             <div class="admin-row"><button type="button" class="admin-btn" id="btn-maint">Turn maintenance mode on</button></div>
@@ -206,8 +218,8 @@
     </div>
   </footer>
 
-  <script src="assets/admin-gate.js?v=202610271851"></script>
-  <script src="assets/app.js?v=202610271851"></script>
-  <script src="assets/admin.js?v=202610271851"></script>
+  <script src="assets/admin-gate.js?v=202610310607"></script>
+  <script src="assets/app.js?v=202610310607"></script>
+  <script src="assets/admin.js?v=202610310607"></script>
 </body>
 </html>

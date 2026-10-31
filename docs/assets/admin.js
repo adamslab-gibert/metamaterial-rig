@@ -291,6 +291,21 @@
       ? `Ender 0: X ${f(p[0][0])} · Y ${f(p[0][1])} · Z ${f(p[0][2])} &nbsp;|&nbsp; Ender 1: X ${f(p[1][0])} · Z ${f(p[1][2])} <span class="sub">(${R.ago(st.updated)})</span>`
       : "Positions: not reported yet (they appear when the rig is idle, with the newest rig program).";
     showPorts(st);
+    showRest(st);
+  }
+
+  /** How far the rig is from its next rest, or how long the current one has to go. */
+  function showRest(st) {
+    const r = (st && st.rest) || null;
+    const left = st && st.resting_minutes;
+    const line = $("rest-now");
+    if (left) line.innerHTML = `<span class="dot off" aria-hidden="true"></span>Resting: <strong>${left} more minute${left === 1 ? "" : "s"}</strong> before testing starts again.`;
+    else if (!r || !r.every) line.innerHTML = "Resting: <strong>off</strong>. The rig tests without a break.";
+    else line.innerHTML = `<span class="dot on" aria-hidden="true"></span>Testing: <strong>${r.since} of ${r.every}</strong> tests since the last rest (then ${r.minutes} minutes).`;
+    if (r && document.activeElement !== $("rest-every") && document.activeElement !== $("rest-minutes")) {
+      if ($("rest-every").value === "") $("rest-every").value = r.every;
+      if ($("rest-minutes").value === "") $("rest-minutes").value = r.minutes;
+    }
   }
 
   const PORT_OF = { "pt-e0": "ender0", "pt-e1": "ender1", "pt-lc": "mark10" };
@@ -364,6 +379,7 @@
       restart_program: ["Restarting", "Close and reopen the rig program? A test that is running is interrupted.", "The rig program is being restarted. Then use Connect & home."],
       stop_program: ["Closing", "Close the rig program? A test that is running is interrupted and the website shows Offline.", "The rig program is being closed."],
       setup: ["Connecting", "Connect both Enders and the Mark-10, load the coordinates and home both Enders? The machine will move.", "Connecting and homing. The status turns to Online and ready when it is done."],
+      fill: ["Filling", "Place an insert in every one of the 105 cells? The machine moves for a long while, and the lattice is then recorded as full.", "Filling every cell. Watch the live view; it takes a while and the rig takes no tests meanwhile."],
       home: ["Homing", "Home both Enders now? The machine will move (after the running test, if any).", "Homing both Enders."],
       estop: ["Stopping", "EMERGENCY STOP: both Enders stop at once, mid-move, and must then be switched off and on, reconnected and homed. It arrives in 20–30 seconds. In a real emergency, switch off the power at the rig. Send it?", "Emergency stop sent. Afterwards: switch the Enders off and on, use Connect & home, then Resume web jobs."],
       halt: ["Halting", "Halt the rig now? The running test stops at once, is marked failed, and web jobs pause.", "Halt sent. Press Resume web jobs after checking the machine."]
@@ -404,6 +420,15 @@
           on ? "Admin: maintenance mode on" : "Admin: maintenance mode off");
         return on ? "Maintenance mode is on and automatic testing is off. The move controls are below. They work once any running test has finished."
                   : "Maintenance mode is off. Web jobs are allowed again" + (lastControl && lastControl.auto_resume === false ? "." : ", and automatic testing is back on.");
+      });
+    };
+    $("btn-rest").onclick = ev => {
+      const every = Math.max(0, Math.round(+$("rest-every").value || 0));
+      const minutes = Math.max(0, Math.round(+$("rest-minutes").value || 0));
+      if (every && !minutes) { toast("A rest of 0 minutes does nothing. Set the minutes, or set the tests to 0 to switch resting off.", true); return; }
+      act(ev.target, "Saving", async () => {
+        await setControl({ rest_every: every, rest_minutes: minutes }, `Admin: rest ${minutes} min every ${every} tests`);
+        return every ? `Saved. The rig will rest ${minutes} minutes after every ${every} tests.` : "Saved. Resting is off.";
       });
     };
     $("btn-ports").onclick = ev => act(ev.target, "Refreshing", async () => {

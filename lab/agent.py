@@ -547,6 +547,8 @@ class Agent:
         s["last"] = self.state.get("last_result")       # the page shows its pattern and curve
         if rig and rig.get("pos") and s.get("state") != "busy":
             s["pos"] = rig["pos"]                        # Ender positions (X, Y, Z) for the Admin page
+        s["rest"] = {"since": self.state.get("tests_since_rest", 0),   # progress towards the next rest, for the Admin page
+                     "every": self.rest_every(), "minutes": self.rest_minutes()}
         if rig and rig.get("ports") is not None:         # serial ports seen by the rig computer, for the Admin page
             s["ports"] = rig.get("ports")
             s["ports_in_use"] = rig.get("ports_in_use") or {}
@@ -587,6 +589,12 @@ class Agent:
             return {"state": "paused", "message": note or ("Being set up. " + setup if rig.get("setup_note") else setup), "job": None, "queue": queue, "minutes_per_test": per}
         if not rig.get("accepting"):
             return {"state": "paused", "message": note or "The lab has paused the queue. Submitted patterns keep their place.", "job": None, "queue": queue, "minutes_per_test": per}
+        left = self.resting_minutes_left()
+        if left:                                        # between batches of tests the silicone is left to recover
+            m = max(1, int(round(left)))
+            return {"state": "paused", "queue": queue, "minutes_per_test": per, "job": None, "resting_minutes": m,
+                    "message": "The specimen is resting for %d more minute%s so the silicone recovers. Testing starts again by itself."
+                               % (m, "" if m == 1 else "s")}
         return {"state": "ready", "message": "", "job": None, "queue": queue, "minutes_per_test": per}
 
     def minutes_per_test(self):
@@ -676,6 +684,12 @@ class Agent:
             return
         self.auto_enabled = ctl.get("auto_fill", True) is not False
         self.maintenance = bool(ctl.get("maintenance"))
+        for k in ("rest_every", "rest_minutes"):        # the Admin page may change how often the specimen rests
+            try:
+                if ctl.get(k) is not None:
+                    setattr(self, "_" + k, max(0, float(ctl[k])))
+            except (TypeError, ValueError):
+                pass
         mflag = self.q / "maintenance"                  # the rig program only moves single axes while this exists
         if self.maintenance and not mflag.exists():
             mflag.write_text("maintenance mode (Admin page)\n")
@@ -709,7 +723,7 @@ class Agent:
     # ---- one-off commands from the Admin page: {"id": ..., "action": ..., "at": ISO time}
     PROGRAM_ACTIONS = ("start_program", "stop_program", "restart_program")      # done by start_rig.py
     RIG_ACTIONS = {"setup": "setup_request", "home": "home_request", "halt": "halt_request",
-                   "estop": "estop_request"}                                           # done by the rig program
+                   "estop": "estop_request", "fill": "fill_request"}                   # done by the rig program
 
     def run_command(self, cmd):
         """Run each command once, and only if it was given in the last 3 minutes (an old command is never
@@ -761,6 +775,31 @@ class Agent:
             return False
         return time.time() - float(st.get("time", 0)) < 30 and not st.get("program_running")
 
+    # ---- resting the specimen: silicone recovers between tests, so the rig pauses now and then
+    def rest_every(self):
+        return int(getattr(self, "_rest_every", self.cfg.get("rest_every", 100)) or 0)
+
+    def rest_minutes(self):
+        return float(getattr(self, "_rest_minutes", self.cfg.get("rest_minutes", 15)) or 0)
+
+    def count_test_for_rest(self):
+        """One more finished test. After `rest_every` of them the rig waits `rest_minutes` before the next."""
+        every = self.rest_every()
+        if not every:
+            self.state["tests_since_rest"] = 0
+            return
+        n = self.state.get("tests_since_rest", 0) + 1
+        if n >= every and self.rest_minutes() > 0:
+            self.state["tests_since_rest"] = 0
+            self.state["rest_until"] = time.time() + self.rest_minutes() * 60
+            log.info("resting the specimen for %g minutes after %d tests", self.rest_minutes(), every)
+        else:
+            self.state["tests_since_rest"] = n
+
+    def resting_minutes_left(self):
+        """Minutes of rest still to go, 0 when the rig may test."""
+        return max(0.0, ((self.state.get("rest_until") or 0) - time.time()) / 60)
+
     def dispatch(self, rig):
         busy = self.state["current"] or any((self.q / "inbox").glob("*.json")) or any((self.q / "running").glob("*.json"))
         ready = rig and rig.get("state") == "idle" and rig.get("accepting") and rig.get("hardware_ready", True)
@@ -773,6 +812,9 @@ class Agent:
         if (busy and not auto_now) or manual or not allowed or getattr(self, "_queued_cache", None) or (b and b["next"] < len(b["codes"])):
             self._idle_since = None
         if busy or not ready:
+            return
+        if self.resting_minutes_left():                 # the specimen is recovering; nothing starts meanwhile
+            self._idle_since = None                     # and the quiet-time count for automatic testing restarts
             return
         b = self.state.get("batch")
         if b and b["next"] < len(b["codes"]):          # a batch in progress runs to the end first
@@ -938,6 +980,8 @@ class Agent:
                 t0 = self.state.pop("started_" + str(n), None)
                 if t0 and info.get("ok"):
                     self.state["durations_min"].append((time.time() - t0) / 60)
+                if info.get("ok"):
+                    self.count_test_for_rest()
                 if self.state["current"] == n:
                     self.state["current"] = None
                     self.state["current_pattern"] = None
@@ -1425,6 +1469,8 @@ DEFAULT_CONFIG = {
     "max_frames": 40, "frame_width": 720,
     "firebase_url": "", "firebase_key_file": "", "live_seconds": 5,
     "auto_fill_minutes": 2,              # test new island patterns after this many quiet minutes (0 = never)
+    "rest_every": 100,                   # let the specimen recover after this many finished tests (0 = never)
+    "rest_minutes": 15,                  # how long that rest lasts
     "auto_frames": 1,                    # photos kept per automatic pattern (requests keep up to max_frames)
     "photo_days": 42,                    # delete photos (here and on GitHub) after this many days (0 = keep)
     "history_days": 42,                  # replace the GitHub history by one commit this often (0 = never)
