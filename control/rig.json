@@ -1,21 +1,18 @@
 {
  "accepting": true,
  "note": "",
- "updated": "2026-10-31T14:54:48.567Z",
+ "updated": "2026-10-31T16:00:01.973Z",
  "home": false,
  "auto_fill": true,
  "command": {
-  "id": "estop-1793408813237",
-  "action": "estop",
-  "at": "2026-10-31T01:06:53.237Z"
+  "id": "homeaxis-1793462401554",
+  "action": "home_axis",
+  "at": "2026-10-31T16:00:01.554Z",
+  "ender": 0,
+  "axis": "X"
  },
  "maintenance": false,
  "commands": [
-  {
-   "id": "setup-1792892517475",
-   "action": "setup",
-   "at": "2026-10-25T01:41:57.475Z"
-  },
   {
    "id": "setup-1793036688863",
    "action": "setup",
@@ -148,6 +145,13 @@
    "id": "estop-1793408813237",
    "action": "estop",
    "at": "2026-10-31T01:06:53.237Z"
+  },
+  {
+   "id": "homeaxis-1793462401554",
+   "action": "home_axis",
+   "at": "2026-10-31T16:00:01.554Z",
+   "ender": 0,
+   "axis": "X"
   }
  ],
  "auto_resume": true
