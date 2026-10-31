@@ -712,3 +712,6 @@ body.gated { overflow: hidden; }
 .lb-short { display: block; font-size: .72rem; font-weight: 700; color: #B23A2B; }
 
 .rest-in { font: inherit; width: 5.5rem; padding: .3rem .4rem; border: 1.5px solid var(--rule); border-radius: 4px; background: #fff; }
+
+.port-row .dot { margin-right: 2px; }
+.port-row label { min-width: 11rem; }

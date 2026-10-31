@@ -9,8 +9,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="assets/style.css?v=202610310607">
-  <script src="assets/config.js?v=202610310607"></script>
+  <link rel="stylesheet" href="assets/style.css?v=202610311754">
+  <script src="assets/config.js?v=202610311754"></script>
 </head>
 <body>
   <a class="skip" href="#main">Skip to the content</a>
@@ -112,17 +112,26 @@
             <p class="fineprint">Places an insert in every one of the 105 cells and remembers the lattice as full. It takes a long time and the machine moves throughout, so watch the live view. Use it after a misalignment, or whenever the lattice and the stored pattern may have drifted apart.</p>
             <h3 class="admin-sub">Ports and connections</h3>
             <p class="admin-line" id="ports-now">Ports: …</p>
-            <div class="admin-row move-row">
+            <div class="admin-row move-row port-row">
+              <span class="dot" id="dot-e0" aria-hidden="true"></span>
               <label>Ender 0 <select id="pt-e0"></select></label>
+              <button type="button" class="admin-btn" id="btn-conn-e0">Initialize</button>
+            </div>
+            <div class="admin-row move-row port-row">
+              <span class="dot" id="dot-e1" aria-hidden="true"></span>
               <label>Ender 1 <select id="pt-e1"></select></label>
+              <button type="button" class="admin-btn" id="btn-conn-e1">Initialize</button>
+            </div>
+            <div class="admin-row move-row port-row">
+              <span class="dot" id="dot-lc" aria-hidden="true"></span>
               <label>Mark-10 <select id="pt-lc"></select></label>
+              <button type="button" class="admin-btn" id="btn-conn-lc">Initialize</button>
             </div>
             <div class="admin-row">
               <button type="button" class="admin-btn" id="btn-ports">Refresh the port list</button>
-              <button type="button" class="admin-btn" id="btn-connect">Connect on these ports</button>
-              <button type="button" class="admin-btn" id="btn-connect-home">Connect and home</button>
+              <button type="button" class="admin-btn" id="btn-connect-home">Connect all three and home</button>
             </div>
-            <p class="fineprint">The list comes from the rig computer and refreshes with the rest of this page. Use this after a device has been unplugged or has changed its COM number. <strong>Connect on these ports</strong> opens the three devices and loads the corner coordinates, without moving anything. <strong>Connect and home</strong> does the same and then homes both Enders. The chosen ports are remembered, so <strong>Connect &amp; home</strong> above works afterwards.</p>
+            <p class="fineprint">Connect <strong>one device at a time</strong>: choose its port, press <strong>Initialize</strong>, and wait for its light to turn green before starting the next. A light goes green when that port is open on the rig computer. Connecting can take up to three minutes per Ender, because opening the port restarts its board. The chosen ports are remembered, so <strong>Connect &amp; home</strong> above works afterwards. <strong>Connect all three and home</strong> does all of them in one go and then homes; use it only when everything is already behaving.</p>
             <h3 class="admin-sub">Home one axis</h3>
             <div class="admin-row move-row">
               <label>Ender <select id="hm-ender"><option value="0">0</option><option value="1">1</option></select></label>
@@ -218,8 +227,8 @@
     </div>
   </footer>
 
-  <script src="assets/admin-gate.js?v=202610310607"></script>
-  <script src="assets/app.js?v=202610310607"></script>
-  <script src="assets/admin.js?v=202610310607"></script>
+  <script src="assets/admin-gate.js?v=202610311754"></script>
+  <script src="assets/app.js?v=202610311754"></script>
+  <script src="assets/admin.js?v=202610311754"></script>
 </body>
 </html>

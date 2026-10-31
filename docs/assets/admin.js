@@ -309,7 +309,9 @@
   }
 
   const PORT_OF = { "pt-e0": "ender0", "pt-e1": "ender1", "pt-lc": "mark10" };
-  let portsShown = "";
+  // one row per device: dropdown, Initialize button, and the light that turns green when the port is open
+  const DEVICE = { "e0": ["ender0", "Ender 0", "pt-e0"], "e1": ["ender1", "Ender 1", "pt-e1"], "lc": ["mark10", "Mark-10", "pt-lc"] };
+  let portsShown = "", portsInUse = {};
   /** The serial ports the rig computer can see, and which device is on which. */
   function showPorts(st) {
     const list = st && Array.isArray(st.ports) ? st.ports : null;
@@ -322,6 +324,12 @@
     $("ports-now").innerHTML = list
       ? `Ports seen: <strong>${list.length ? list.map(escapeHtml).join(", ") : "none"}</strong><br><span class="sub">${inUse} (${R.ago(st.updated)})</span>`
       : "Ports: not reported yet (they appear when the rig program is running, with the newest version).";
+    portsInUse = used;
+    for (const tag of Object.keys(DEVICE)) {
+      const u = used[DEVICE[tag][0]];
+      $("dot-" + tag).className = "dot " + (u && u.open ? "on" : "off");
+      $("dot-" + tag).title = u && u.open ? "connected on " + u.port : "not connected";
+    }
     const key = JSON.stringify([list, used]);
     if (key === portsShown) return;                       // don't wipe a choice that is being made
     portsShown = key;
@@ -431,6 +439,35 @@
         return every ? `Saved. The rig will rest ${minutes} minutes after every ${every} tests.` : "Saved. Resting is off.";
       });
     };
+    const sleep = ms => new Promise(r => setTimeout(r, ms));
+    async function connectOne(tag, btn) {
+      const [key, label, sel] = DEVICE[tag];
+      const port = $(sel).value;
+      if (!port) { toast(`Choose a port for ${label} first.`, true); return; }
+      const old = btn.textContent;
+      btn.disabled = true; btn.textContent = "Connecting…";
+      try {
+        await setControl({ command: { id: "connect-" + Date.now(), action: "connect", at: new Date().toISOString(), [key]: port, home: false } },
+          `Admin: connect ${label} on ${port}`);
+        toast(`${label}: connecting on ${port}. Its light turns green when the port is open — up to three minutes for an Ender.`);
+        for (let i = 0; i < 16; i++) {            // watch for about four minutes
+          await sleep(15000);
+          portsShown = "";                        // force the dropdowns and lights to be redrawn
+          await load();
+          const u = portsInUse[key];
+          if (u && u.open && u.port === port) { toast(`${label} is connected on ${port}.`); return; }
+        }
+        toast(`${label} is still not open on ${port}. Look at the rig program's messages, or try a different port.`, true);
+      } catch (e) {
+        toast(e.message, true);
+      } finally {
+        btn.disabled = false; btn.textContent = old;
+      }
+    }
+    for (const tag of Object.keys(DEVICE)) {
+      const btn = $("btn-conn-" + tag);
+      btn.onclick = () => connectOne(tag, btn);
+    }
     $("btn-ports").onclick = ev => act(ev.target, "Refreshing", async () => {
       portsShown = "";
       await load();
@@ -447,7 +484,6 @@
         return "Sent. The rig computer connects within about 30 seconds" + (withHome ? " and then homes both Enders." : ". Watch the lines above for the ports in use.");
       });
     };
-    $("btn-connect").onclick = connect(false);
     $("btn-connect-home").onclick = connect(true);
     const hmAxis = $("hm-axis");
     $("hm-ender").onchange = () => {
