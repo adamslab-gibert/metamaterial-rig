@@ -1,23 +1,16 @@
 {
  "accepting": false,
  "note": "Maintenance in progress.",
- "updated": "2026-10-31T18:04:13.116Z",
+ "updated": "2026-10-31T18:04:41.931Z",
  "home": false,
  "auto_fill": false,
  "command": {
-  "id": "stop_program-1793469852933",
-  "action": "stop_program",
-  "at": "2026-10-31T18:04:12.933Z"
+  "id": "start_program-1793469881668",
+  "action": "start_program",
+  "at": "2026-10-31T18:04:41.668Z"
  },
  "maintenance": true,
  "commands": [
-  {
-   "id": "homeaxis-1793225648898",
-   "action": "home_axis",
-   "at": "2026-10-28T22:14:08.898Z",
-   "ender": 0,
-   "axis": "Y"
-  },
   {
    "id": "setup-1793225688828",
    "action": "setup",
@@ -158,6 +151,11 @@
    "id": "stop_program-1793469852933",
    "action": "stop_program",
    "at": "2026-10-31T18:04:12.933Z"
+  },
+  {
+   "id": "start_program-1793469881668",
+   "action": "start_program",
+   "at": "2026-10-31T18:04:41.668Z"
   }
  ],
  "auto_resume": true
