@@ -1,7 +1,7 @@
 {
  "accepting": false,
  "note": "Maintenance in progress.",
- "updated": "2026-11-02T16:39:54.086Z",
+ "updated": "2026-11-02T16:41:18.284Z",
  "home": false,
  "auto_fill": false,
  "command": {
@@ -146,5 +146,7 @@
    "at": "2026-11-02T16:39:53.918Z"
   }
  ],
- "auto_resume": true
+ "auto_resume": true,
+ "rest_every": 100,
+ "rest_minutes": 15
 }
