@@ -1,9 +1,9 @@
 {
  "accepting": true,
  "note": "",
- "updated": "2026-11-02T16:41:33.501Z",
+ "updated": "2026-11-02T16:47:49.036Z",
  "home": false,
- "auto_fill": true,
+ "auto_fill": false,
  "command": {
   "id": "fill-1793637593918",
   "action": "fill",
