@@ -1,23 +1,16 @@
 {
  "accepting": true,
  "note": "",
- "updated": "2026-11-03T17:02:20.125Z",
+ "updated": "2026-11-03T17:03:02.298Z",
  "home": false,
  "auto_fill": false,
  "command": {
-  "id": "fill-1793724803528",
+  "id": "fill-1793725382070",
   "action": "fill",
-  "at": "2026-11-03T16:53:23.528Z"
+  "at": "2026-11-03T17:03:02.070Z"
  },
  "maintenance": true,
  "commands": [
-  {
-   "id": "connect-1793470298043",
-   "action": "connect",
-   "at": "2026-10-31T18:11:38.043Z",
-   "mark10": "COM6",
-   "home": false
-  },
   {
    "id": "homeaxis-1793470460472",
    "action": "home_axis",
@@ -140,6 +133,11 @@
    "id": "fill-1793724803528",
    "action": "fill",
    "at": "2026-11-03T16:53:23.528Z"
+  },
+  {
+   "id": "fill-1793725382070",
+   "action": "fill",
+   "at": "2026-11-03T17:03:02.070Z"
   }
  ],
  "auto_resume": true,
