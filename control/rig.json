@@ -1,7 +1,7 @@
 {
- "accepting": false,
- "note": "Stopped by the lab.",
- "updated": "2026-11-03T16:57:19.443Z",
+ "accepting": true,
+ "note": "",
+ "updated": "2026-11-03T16:59:31.370Z",
  "home": false,
  "auto_fill": true,
  "command": {
