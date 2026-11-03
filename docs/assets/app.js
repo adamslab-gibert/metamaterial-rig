@@ -100,7 +100,7 @@
     const who = yourName(), nameQ = `&name=${encodeURIComponent(who)}`;
     const copyOfTarget = challenge.target && challenge.targetPattern && bits.join("") === challenge.targetPattern;
     if (copyOfTarget) { codeMsg.textContent = `This is target ${challenge.target}'s own pattern. The challenge is to find a different pattern with the same curve, so it can't be submitted.`; codeMsg.classList.add("bad"); submit.setAttribute("aria-disabled", "true"); }
-    else if (challenge.target) submit.removeAttribute("aria-disabled");
+    else submit.removeAttribute("aria-disabled");      // a complete pattern is always submittable again
     if (challenge.target) {
       submit.href = newIssue + `template=challenge.yml&title=${encodeURIComponent(`Challenge ${challenge.target}: ${n} inserts (${who})`)}` + nameQ +
         `&target=${challenge.target}&pattern=${bits.join("")}` + (challenge.method ? `&method=${encodeURIComponent(challenge.method.slice(0, 1500))}` : "");
