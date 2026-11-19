@@ -1,8 +1,8 @@
 {
- "runs": 23317,
- "island": 20219,
- "other": 3098,
- "built": "2026-10-22",
+ "runs": 23921,
+ "island": 20262,
+ "other": 3659,
+ "built": "2026-11-19",
  "sets": [
   {
    "files": [
@@ -23,6 +23,16 @@
    "rows_in_files": 23915,
    "runs_added": 2514,
    "description": "Original 23,915 rig runs; only patterns not already in the final set were added: an early batch of 2,514 patterns that were not generated with the island algorithm."
+  },
+  {
+   "files": [
+    "codeData_new605.npy",
+    "dataData_new605.npy",
+    "maxData_new605.npy"
+   ],
+   "rows_in_files": 605,
+   "runs_added": 604,
+   "description": "Earlier rig runs recovered from the lab experiment folders (Experiment*/data_filtered): GNN, clustering, synthesis and inverse-design test patterns, one run per pattern, each run zero-offset corrected and stopped at the 20 N force limit."
   }
  ],
  "held_out_targets": 10
