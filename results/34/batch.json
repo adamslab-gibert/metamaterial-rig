@@ -1,0 +1,1 @@
+{"issue": 34, "total": 30, "submitted_by": "adamslab-gibert", "submitted_name": "Eric", "patterns": [{"index": 0, "pattern": "011111100010111101011100101100001110100110101111111111111110111111001110001001100011100101101110111111101", "status": "failed", "message": "stopped by the operator (Halt) while placing inserts"}]}
