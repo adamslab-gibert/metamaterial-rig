@@ -1,7 +1,7 @@
 {
- "accepting": false,
- "note": "The lab has paused the queue. You can still make submissions. Submitted patterns keep their place.",
- "updated": "2026-11-23T22:16:46.376Z",
+ "accepting": true,
+ "note": "",
+ "updated": "2026-11-24T12:57:37.587Z",
  "home": false,
  "auto_fill": false,
  "command": {
