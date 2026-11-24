@@ -1,7 +1,7 @@
 {
  "accepting": true,
  "note": "",
- "updated": "2026-11-24T19:00:24.771Z",
+ "updated": "2026-11-24T19:38:48.095Z",
  "home": false,
  "auto_fill": true,
  "command": {
@@ -137,6 +137,6 @@
   }
  ],
  "auto_resume": true,
- "rest_every": 200,
+ "rest_every": 150,
  "rest_minutes": 30
 }
