@@ -1,7 +1,7 @@
 {
- "accepting": false,
- "note": "Maintenance in progress. You can still make submissions. They get added to the queue.",
- "updated": "2026-11-25T03:09:06.921Z",
+ "accepting": true,
+ "note": "",
+ "updated": "2026-11-25T17:51:31.418Z",
  "home": false,
  "auto_fill": false,
  "command": {
