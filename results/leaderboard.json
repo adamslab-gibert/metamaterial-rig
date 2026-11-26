@@ -1200,5 +1200,21 @@
   "method": "Nearest-neighbour search over the published 23,921-run dataset (built 2026-11-19): for each target, chose the island pattern minimizing RMS difference between normalized force curves (dataData). Predicted RMS: T1 0.212 N, T2 0.240 N. Neither entry copies its target's own pattern.",
   "pattern": "111011110111000100010001010110101001101010011000011011011111011111111111111111111111111111111111111111111",
   "curve": "results/39/0/curve.json"
+ },
+ {
+  "issue": 39,
+  "batch_index": 1,
+  "user": "nchoksey153",
+  "name": "ME274: Neel-Choksey",
+  "target": "T2",
+  "score_N": 0.9919,
+  "stroke_error_mm": 2.1,
+  "max_displacement_mm": 21.0,
+  "reached_20N": true,
+  "max_force_N": 19.72,
+  "tested_at": "2026-11-26T21:50:43Z",
+  "method": "Nearest-neighbour search over the published 23,921-run dataset (built 2026-11-19): for each target, chose the island pattern minimizing RMS difference between normalized force curves (dataData). Predicted RMS: T1 0.212 N, T2 0.240 N. Neither entry copies its target's own pattern.",
+  "pattern": "101101101101100011100111111111010110000101011100111001100111101111101110101101011011010100001101011111011",
+  "curve": "results/39/1/curve.json"
  }
 ]
