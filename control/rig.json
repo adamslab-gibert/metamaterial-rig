@@ -1,7 +1,7 @@
 {
- "accepting": true,
- "note": "",
- "updated": "2026-11-27T03:58:02.595Z",
+ "accepting": false,
+ "note": "The rig has been paused for today. It will be online again tomorrow. You can still make submissions. They will be tested once the rig comes online.",
+ "updated": "2026-11-27T03:59:36.018Z",
  "home": false,
  "auto_fill": false,
  "command": {
